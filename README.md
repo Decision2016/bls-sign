@@ -1,4 +1,4 @@
-#bls-sign
+# bls-sign
 
 ### Boneh–Lynn–Shacham signature scheme
 
