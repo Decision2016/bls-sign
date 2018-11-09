@@ -22,3 +22,7 @@ Shamir's Secret Sharing is an algorithm in cryptography created by Adi Shamir. I
 Counting on all participants to combine the secret might be impractical, and therefore sometimes the threshold scheme is used where any k of the parts are sufficient to reconstruct the original secret.
 
 ![alt text](https://i.gyazo.com/b07cf212338f79f9e8863166fd19e7b9.png)
+
+### Examples
+
+You can see examples in the test.js file
