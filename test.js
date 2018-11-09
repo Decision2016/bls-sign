@@ -47,7 +47,6 @@ const n = 5
 const k = 3
 
 let prv0 = new BLSSecretKey()
-
 let sig0 = new BLSSignature()
 
 sig0 = prv0.sign(H)
@@ -59,7 +58,7 @@ let vec = prv0.share(n, k)
 let signVec = new Array(n)
 
 for (let i = 0; i < n; i++) {
-  let H = signer.getRandomPointOnEt();
+  let H = signer.getRandomPointOnEt()
   signVec[i] = vec[i].sign(H)
 
   let pub = new BLSPublicKey(vec[i], Q)

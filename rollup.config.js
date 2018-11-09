@@ -15,13 +15,10 @@ module.exports = {
     file: 'dist/index.mjs',
     format: 'es'
   }],
-  plugins: [ 
-    
+  plugins: [
     resolve(),
     commonjs({
-      // non-CommonJS modules will be ignored, but you can also
-      // specifically include/exclude files
-      include: 'node_modules/**',  // Default: undefined
+      include: 'node_modules/**',
     }),
     babel({
       exclude: 'node_modules/**'
