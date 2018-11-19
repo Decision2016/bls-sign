@@ -285,10 +285,17 @@ class Parameters {
       this.zeta1sigma = this.zeta1.multiply(this.sigma).mod(this.p);
 
       this.invSqrtMinus2 = this.p.subtract(this._2).modPow(this.p.subtract(this._1).subtract(this.p.add(this._1).shiftRight(2)), this.p);
-      this.sqrtI = new Field2(this, this.invSqrtMinus2, (ExNumber.signum(this.invSqrtMinus2) !== 0) ? this.p.subtract(this.invSqrtMinus2) : this.invSqrtMinus2, false);
-      this.Fp2_0 = new Field2(this, this._0);
-      this.Fp2_1 = new Field2(this, this._1);
-      this.Fp2_i = new Field2(this, this._0, this._1, false);
+
+      console.log('invsqrt222', this.invSqrtMinus2)
+
+
+      this.sqrtI = new Field2(this.p, this.invSqrtMinus2, (ExNumber.signum(this.invSqrtMinus2) !== 0) ? this.p.subtract(this.invSqrtMinus2) : this.invSqrtMinus2, false);
+    
+      console.log('this.sqrtI', this.sqrtI)
+
+      this.Fp2_0 = new Field2(this.p, this._0);
+      this.Fp2_1 = new Field2(this.p, this._1);
+      this.Fp2_i = new Field2(this.p, this._0, this._1, false);
       this.Fp12_0 = new Field12(this, this._0);
       this.Fp12_1 = new Field12(this, this._1);
 
@@ -338,7 +345,6 @@ class Parameters {
   get order () {
     return this.n;
   }
-
 
   sqrt (v) {
     if (ExNumber.signum(v) === 0) {
@@ -409,33 +415,6 @@ class Parameters {
     let r = this.lucas(z, this.p.shiftRight(2)).multiply(t.modInverse(this.p)).mod(this.p);
     
     return r.multiply(r).subtract(v).mod(this.p).signum() === 0 ? r : null;
-  }
-
-  cbrt (v) {
-    if (this.p.mod(this._9).intValue() !== 4) {
-        throw new Error("This implementation is optimized for, and only works with, prime fields GF(p) where p = 4 (mod 9)");
-    }
-    if (v.signum() === 0) {
-        return this._0;
-    }
-    let r = v.modPow(this.cbrtExponent, this.p);
-    return r.multiply(r).multiply(r).subtract(v).mod(this.p).signum() === 0 ? r : null;
-  }
-
-  lucas (P, k) {
-    let d_1 = P;
-    let d_2 = P.multiply(P).subtract(this._2).mod(this.p);
-    let l = k.bitLength() - 1;
-    for (let j = l - 1; j >= 1; j--) {
-        if (ExNumber.testBit(k, j)) {
-            d_1 = d_1.multiply(d_2).subtract(P).mod(this.p);
-            d_2 = d_2.multiply(d_2).subtract(this._2).mod(this.p);
-        } else {
-            d_2 = d_1.multiply(d_2).subtract(P).mod(this.p);
-            d_1 = d_1.multiply(d_1).subtract(this._2).mod(this.p);
-        }
-    }
-    return (ExNumber.testBit(k, 0)) ? d_1.multiply(d_2).subtract(P).mod(this.p) : d_1.multiply(d_1).subtract(this._2).mod(this.p);
   }
 
 }

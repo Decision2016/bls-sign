@@ -4,34 +4,41 @@ import CryptoRandom from './Rnd'
 import bigInt from 'big-integer'
 import ExNumber from './ExNumber'
 
+
+const _1 = bigInt('1')
+const _2 = bigInt('2')
+const _0 = bigInt('0')
+const _7 = bigInt('7')
+
+
 class Field2 {
-  constructor (bn, re, im, reduce) {
+  constructor (p, re, im, reduce) {
     if(arguments.length === 1) {
-      this.bn = bn;
-      this.re = bn._0;
-      this.im = bn._0;
+      this.p = p
+      this.re = _0
+      this.im = _0
     }
     if(arguments.length === 2) {
       if (bigInt.isInstance(re)) {
-        this.bn = bn;
+        this.p = p;
         this.re = re; //no  reduction!!!//
-        this.im = bn._0;
+        this.im = _0;
       } else if (re instanceof CryptoRandom) {
-        this.bn = bn;
+        this.p = p;
         let rand = re;
         do {
-            this.re =  ExNumber.construct(this.bn.p.bitLength(), rand);
-        } while (this.re.compareTo(this.bn.p) >= 0);
+            this.re =  ExNumber.construct(this.p.bitLength(), rand);
+        } while (this.re.compareTo(this.p) >= 0);
         do {
-            this.im =  ExNumber.construct(this.bn.p.bitLength(), rand);
-        } while (this.im.compareTo(this.bn.p) >= 0);
+            this.im =  ExNumber.construct(this.p.bitLength(), rand);
+        } while (this.im.compareTo(this.p) >= 0);
       }
     }
     if(arguments.length === 4) {
-      this.bn = bn;
+      this.p = p;
       if (reduce) {
-        this.re = ExNumber.mod(re, bn.p);
-        this.im = ExNumber.mod(im, bn.p);
+        this.re = ExNumber.mod(re, this.p);
+        this.im = ExNumber.mod(im, this.p);
       } else {
         this.re = re;
         this.im = im;
@@ -39,85 +46,79 @@ class Field2 {
     }
   }
 
-  randomize(rand) {
-    return new Field2(this.bn, rand);
-  };
-
   zero() {
     return ExNumber.signum(this.re) === 0 && ExNumber.signum(this.im) === 0;
   }
 
   one() {
-    return this.re.compareTo(this.bn._1) === 0 && ExNumber.signum(this.im) === 0;
+    return this.re.compareTo(_1) === 0 && ExNumber.signum(this.im) === 0;
   }
 
   eq(u) {
     if (!(u instanceof Field2)) {
         return false;
     }
-    let v = u;
-    return this.bn === v.bn &&
-        this.re.compareTo(v.re) === 0 &&
-        this.im.compareTo(v.im) === 0;
+    return this.re.compareTo(u.re) === 0 &&
+        this.im.compareTo(u.im) === 0;
   }
 
   neg() {
-      return new Field2(this.bn, (ExNumber.signum(this.re) !== 0) ? this.bn.p.subtract(this.re) : this.re, (ExNumber.signum(this.im) !== 0) ? this.bn.p.subtract(this.im) : this.im, false);
+      return new Field2(this.p, (ExNumber.signum(this.re) !== 0) ? this.p.subtract(this.re) : this.re, (ExNumber.signum(this.im) !== 0) ? this.p.subtract(this.im) : this.im, false);
   }
 
   conj() {
-      return new Field2(this.bn, this.re, (ExNumber.signum(this.im) !== 0) ? this.bn.p.subtract(this.im) : this.im, false);
+      return new Field2(this.p, this.re, (ExNumber.signum(this.im) !== 0) ? this.p.subtract(this.im) : this.im, false);
   }
 
   add (v) {
       if (v instanceof Field2) {
-        if (this.bn !== v.bn) {
+        if (this.p !== v.p) {
             throw new Error("Operands are in different finite fields");
         }
         let r = this.re.add(v.re);
         
-        if (r.compareTo(this.bn.p) >= 0) {
-            r = r.subtract(this.bn.p);
+        if (r.compareTo(this.p) >= 0) {
+            r = r.subtract(this.p);
         }
         let i = this.im.add(v.im);
         
-        if (i.compareTo(this.bn.p) >= 0) {
-            i = i.subtract(this.bn.p);
+        if (i.compareTo(this.p) >= 0) {
+            i = i.subtract(this.p);
         }
-        return new Field2(this.bn, r, i, false);
+        return new Field2(this.p, r, i, false);
       } else if (bigInt.isInstance(v)) {
         let s = this.re.add(v);
         
-        if (s.compareTo(this.bn.p) >= 0) {
-            s = s.subtract(this.bn.p);
+        if (s.compareTo(this.p) >= 0) {
+            s = s.subtract(this.p);
         }
-        return new Field2(this.bn, s, this.im, false);
+        return new Field2(this.p, s, this.im, false);
       }
   }
 
   subtract(v) {
     if (v instanceof Field2) {
-      if (this.bn !== v.bn) {
+      if (this.p !== v.p) {
           throw new Error("Operands are in different finite fields");
       }
       let r = this.re.subtract(v.re);
       
       if (ExNumber.signum(r) < 0) {
-          r = r.add(this.bn.p);
+          r = r.add(this.p);
       }
       let i = this.im.subtract(v.im);
       
       if (ExNumber.signum(i) < 0) {
-          i = i.add(this.bn.p);
+          i = i.add(this.p);
       }
-      return new Field2(this.bn, r, i, false);
+      return new Field2(this.p, r, i, false);
     } else if (bigInt.isInstance(v)) {
         
       let r = this.re.subtract(v);
       if (r.signum() < 0) {
-          r = r.add(this.bn.p);
+          r = r.add(this.p);
       }
-      return new Field2(this.bn, r, this.im, false);
+      return new Field2(this.p, r, this.im, false);
     }
   }
 
@@ -126,22 +127,29 @@ class Field2 {
     let i = this.im;
     while (k-- > 0) {
         r = r.shiftLeft(1);
-        if (r.compareTo(this.bn.p) >= 0) {
-            r = r.subtract(this.bn.p);
+        if (r.compareTo(this.p) >= 0) {
+            r = r.subtract(this.p);
         }
         i = i.shiftLeft(1);
-        if (i.compareTo(this.bn.p) >= 0) {
-            i = i.subtract(this.bn.p);
+        if (i.compareTo(this.p) >= 0) {
+            i = i.subtract(this.p);
         }
     }
-    return new Field2(this.bn, r, i, false);
+    return new Field2(this.p, r, i, false);
   }
 
   halve () {
-    return new Field2(this.bn,
-        (ExNumber.testBit(this.re, 0) ? this.re.add(this.bn.p) : this.re).shiftRight(1),
-        (ExNumber.testBit(this.im, 0) ? this.im.add(this.bn.p) : this.im).shiftRight(1),
+    return new Field2(this.p,
+        (ExNumber.testBit(this.re, 0) ? this.re.add(this.p) : this.re).shiftRight(1),
+        (ExNumber.testBit(this.im, 0) ? this.im.add(this.p) : this.im).shiftRight(1),
         false);
+  }
+
+  divide(v) {
+    if (v instanceof Field2) {
+      return this.multiply(v.inverse());
+    }
+    return null;
   }
 
   multiply (v) {
@@ -164,31 +172,31 @@ class Field2 {
       let im2 = this.im.multiply(v.im);
       let mix = this.re.add(this.im).multiply(v.re.add(v.im));
 
-      return new Field2(this.bn,
+      return new Field2(this.p,
           re2.subtract(im2),
           mix.subtract(re2).subtract(im2),
           true);
     }
 
     else if (bigInt.isInstance(v) ) {
-      return new Field2(this.bn, this.re.multiply(v), this.im.multiply(v), true);
+      return new Field2(this.p, this.re.multiply(v), this.im.multiply(v), true);
     }
     else if (v instanceof Number) {
       let newre = this.re.multiply(bigInt(v.toString()));
       while ( ExNumber.signum(newre) < 0) {
-          newre = newre.add(this.bn.p);
+          newre = newre.add(this.p);
       }
-      while (newre.compareTo(this.bn.p) >= 0) {
-          newre = newre.subtract(this.bn.p);
+      while (newre.compareTo(this.p) >= 0) {
+          newre = newre.subtract(this.p);
       }
       let newim = this.im.multiply(bigInt(v.toString()));
       while (ExNumber.signum(newim) < 0) {
-          newim = newim.add(this.bn.p);
+          newim = newim.add(this.p);
       }
-      while (newim.compareTo(this.bn.p) >= 0) {
-          newim = newim.subtract(this.bn.p);
+      while (newim.compareTo(this.p) >= 0) {
+          newim = newim.subtract(this.p);
       }
-      return new Field2(this.bn, newre, newim, false);
+      return new Field2(this.p, newre, newim, false);
     } else {
       throw new Error("Incorrect type argument");
     }
@@ -199,15 +207,15 @@ class Field2 {
         return this;
     }
     if (ExNumber.signum(this.im) === 0) {
-        return new Field2(this.bn,
-            this.re.multiply(this.re), this.bn._0, true);
+        return new Field2(this.p,
+            this.re.multiply(this.re), _0, true);
     }
     if ( ExNumber.signum(this.re) === 0) {
-        return new Field2(this.bn,
-            this.im.multiply(this.im).negate(), this.bn._0, true);
+        return new Field2(this.p,
+            this.im.multiply(this.im).negate(), _0, true);
     }
 
-    return new Field2(this.bn,
+    return new Field2(this.p,
         this.re.add(this.im).multiply(this.re.subtract(this.im)),
         this.re.multiply(this.im).shiftLeft(1),
         true);
@@ -216,48 +224,48 @@ class Field2 {
   cube () {
     let re2 = this.re.multiply(this.re);
     let im2 = this.im.multiply(this.im);
-    return new Field2(this.bn,
+    return new Field2(this.p,
         this.re.multiply(re2.subtract(im2.add(im2).add(im2))),
         this.im.multiply(re2.add(re2).add(re2).subtract(im2)),
         true);
   }
 
   inverse () {
-    let d = this.re.multiply(this.re).add(this.im.multiply(this.im)).modInv(this.bn.p);
-    return new Field2(this.bn, this.re.multiply(d), this.bn.p.subtract(this.im).multiply(d), true);
+    let d = this.re.multiply(this.re).add(this.im.multiply(this.im)).modInv(this.p);
+    return new Field2(this.p, this.re.multiply(d), this.p.subtract(this.im).multiply(d), true);
   }
 
   mulI () {
-    return new Field2(this.bn, (ExNumber.signum(this.im) !== 0) ? this.bn.p.subtract(this.im) : this.im, this.re, false);
+    return new Field2(this.p, (ExNumber.signum(this.im) !== 0) ? this.p.subtract(this.im) : this.im, this.re, false);
   }
 
   divideI () {
-    return new Field2(this.bn, this.im, (ExNumber.signum(this.re) !== 0) ? bn.p.subtract(this.re) : this.re, false);
+    return new Field2(this.p, this.im, (ExNumber.signum(this.re) !== 0) ? this.p.subtract(this.re) : this.re, false);
   }
 
   mulV () {
     let r = this.re.subtract(this.im);
     if (ExNumber.signum(r) < 0) {
-        r = r.add(this.bn.p);
+        r = r.add(this.p);
     }
     let i = this.re.add(this.im);
-    if (i.compareTo(this.bn.p) >= 0) {
-        i = i.subtract(this.bn.p);
+    if (i.compareTo(this.p) >= 0) {
+        i = i.subtract(this.p);
     }
-    return new Field2(this.bn, r, i, false);
+    return new Field2(this.p, r, i, false);
   }
 
   divV () {
     let qre = this.re.add(this.im);
-    if (qre.compareTo(this.bn.p) >= 0) {
-        qre = qre.subtract(this.bn.p);
+    if (qre.compareTo(this.p) >= 0) {
+        qre = qre.subtract(this.p);
     }
     let qim = this.im.subtract(this.re);
     if (ExNumber.signum(qim) < 0) {
-        qim = qim.add(this.bn.p);
+        qim = qim.add(this.p);
     }
-    return new Field2(this.bn, (ExNumber.testBit(qre, 0) ? qre.add(this.bn.p) : qre).shiftRight(1),
-        (ExNumber.testBit(qim, 0) ? qim.add(this.bn.p) : qim).shiftRight(1), false);
+    return new Field2(this.p, (ExNumber.testBit(qre, 0) ? qre.add(this.p) : qre).shiftRight(1),
+        (ExNumber.testBit(qim, 0) ? qim.add(this.p) : qim).shiftRight(1), false);
   }
 
   exp (k) {
@@ -269,7 +277,7 @@ class Field2 {
     let e = ExNumber.toByteArray(k);
 
     var mP = new Array(16);
-    mP[0] = this.bn.Fp2_1;
+    mP[0] = new Field2(this.p, bigInt('1'));
     mP[1] = P;
     for (var m = 1; m <= 7; m++) {
         
@@ -288,7 +296,8 @@ class Field2 {
     if (this.zero()) {
         return this;
     }
-    let r = this.exp(this.bn.sqrtExponent2);
+    //sqrtExponent
+    let r = this.exp( this.p.multiply(this.p).add(_7).shiftRight(4) );
     let r2 = r.square();
     if (r2.subtract(this).zero()) {
         return r;
@@ -297,14 +306,19 @@ class Field2 {
         return r.mulI();
     }
     r2 = r2.mulI();
-    
-    r = r.multiply(this.bn.sqrtI);
+    //sqrtI
+    const invSqrtMinus2 = this.p.subtract(_2).modPow(this.p.subtract(_1).subtract(this.p.add(_1).shiftRight(2)), this.p);
+    console.log('invsqrt', invSqrtMinus2)
+    const sqrtI = new Field2(this.p, invSqrtMinus2, (ExNumber.signum(invSqrtMinus2) !== 0) ? this.p.subtract(invSqrtMinus2) : invSqrtMinus2, false);
+
+    r = r.multiply(sqrtI);
     if (r2.subtract(this).zero()) {
         return r;
     }
     if (r2.add(this).zero()) {
         return r.mulI();
     }
+    console.log('nulllllllll', r2);
     return null;
   }
 
@@ -597,7 +611,7 @@ class Field6 {
             return new Field6(this.bn, d12.mulV().add(d00), d22.mulV().add(d01), d02.add(d11));
         }
     } else if (w instanceof Field2) {
-        if (this.bn !== w.bn) {
+        if (this.bn.p !== w.p) {
             throw new Error("Operands are in different finite fields");
         }
         if (w.one()) {

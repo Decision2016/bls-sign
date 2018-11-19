@@ -3,6 +3,7 @@
 import { Field2, Field12 } from './Fields'
 import bigInt from 'big-integer'
 import ExNumber from './ExNumber'
+const _1 = bigInt('1')
 
 class Pairing {
     constructor (Et) {
@@ -86,7 +87,7 @@ class Pairing {
       P = P.norm();
       Q = Q.norm();
       if (!P.zero() && !Q.zero()) {
-        var ord = this.bn.t.subtract(this.E.bn._1);
+        var ord = this.bn.t.subtract(_1);
         var X = Q.x;
         var Y = Q.y;
         var Z = Q.z;

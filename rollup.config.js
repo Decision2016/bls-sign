@@ -21,7 +21,8 @@ module.exports = {
       include: 'node_modules/**',
     }),
     babel({
-      exclude: 'node_modules/**'
+      exclude: 'node_modules/**',
+      plugins: ['external-helpers']
     }),
     builtins(),
     copy({

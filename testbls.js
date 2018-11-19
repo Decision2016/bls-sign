@@ -1,4 +1,4 @@
-const {BLSSigner, BLSSecretKey, BLSSignature, BLSPublicKey} =  require( './index' )
+const {BLSSigner, BLSSecretKey, BLSSignature, BLSPublicKey} =  require( './src/index' )
 
 const signer = new BLSSigner(192)
 
@@ -29,7 +29,7 @@ console.log('sH', sH)
 const sH2 = new BLSSecretKey().sign(H)
 console.log('sH2', sH2)
 console.log('\x1b[37m', ' Q  = (' + (Q.x) + ', ' + (Q.y) + ', ' + (Q.z) + ')')
-console.log('\x1b[37m', ' sQ = (' + (sQ.x) + ', ' + (sQ.y) + ', ' + (sQ.z) + ')')
+console.log('\x1b[37m', ' sQ = (' + (sQ.sQ.x) + ', ' + (sQ.sQ.y) + ', ' + (sQ.sQ.z) + ')')
 console.log('\x1b[37m', ' H  = (' + (H.x.re) + ', ' + (H.y.re) + ', ' + (H.z.re) + ')')
 console.log('\x1b[37m', ' sH = (' + (sH.sH.x.re) + ', ' + (sH.sH.y.re) + ', ' + (sH.sH.z.re) + ')')
 console.log('\x1b[33m', ' Verify(Q,sQ,H,sH) = ' + signer.verify(Q, H, sQ, sH) + '')
