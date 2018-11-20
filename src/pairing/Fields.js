@@ -9,6 +9,7 @@ const _1 = bigInt('1')
 const _2 = bigInt('2')
 const _0 = bigInt('0')
 const _7 = bigInt('7')
+const _9 = bigInt('9')
 
 
 class Field2 {
@@ -72,7 +73,8 @@ class Field2 {
 
   add (v) {
       if (v instanceof Field2) {
-        if (this.p !== v.p) {
+  
+        if (!this.p.eq( v.p )) {
             throw new Error("Operands are in different finite fields");
         }
         let r = this.re.add(v.re);
@@ -153,6 +155,7 @@ class Field2 {
   }
 
   multiply (v) {
+
 
     if (v instanceof Field2) {
       if (this === v) {
@@ -308,7 +311,6 @@ class Field2 {
     r2 = r2.mulI();
     //sqrtI
     const invSqrtMinus2 = this.p.subtract(_2).modPow(this.p.subtract(_1).subtract(this.p.add(_1).shiftRight(2)), this.p);
-    console.log('invsqrt', invSqrtMinus2)
     const sqrtI = new Field2(this.p, invSqrtMinus2, (ExNumber.signum(invSqrtMinus2) !== 0) ? this.p.subtract(invSqrtMinus2) : invSqrtMinus2, false);
 
     r = r.multiply(sqrtI);
@@ -318,7 +320,7 @@ class Field2 {
     if (r2.add(this).zero()) {
         return r.mulI();
     }
-    console.log('nulllllllll', r2);
+
     return null;
   }
 
@@ -354,13 +356,13 @@ class Field4 {
         else if (bigInt.isInstance(re)) {
             let k = re;
             this.bn = bn;
-            this.re = new Field2(bn, k);
+            this.re = new Field2(bn.p, k);
             this.im = bn.Fp2_0;
         }
         else if (re instanceof CryptoRandom()) {
             this.bn = bn;
-            this.re = new Field2(bn, re);
-            this.im = new Field2(bn, re);
+            this.re = new Field2(bn.p, re);
+            this.im = new Field2(bn.p, re);
         }
     }
 
@@ -403,7 +405,7 @@ class Field4 {
       let b0c0 = b0.multiply(c0);
       let b1c1 = b1.multiply(c1);
       return new Field4(this.bn,
-          (this.bn.b === 3) ? b0c0.add(b1c1.divV()) :  b0c0.add(b1c1.mulV()),
+           b0c0.add(b1c1.divV()),
           b0.add(b1).multiply(c0.add(c1)).subtract(b0c0).subtract(b1c1));
     }
 
@@ -428,7 +430,7 @@ class Field4 {
       let a02 = a0.square();
       let a12 = a1.square();
       return new Field4 (this.bn,
-          (this.bn.b === 3) ? a02.add(a12.divV()) : a02.add(a12.mulV()),
+           a02.add(a12.divV()),
           a0.add(a1).square().subtract(a02).subtract(a12));
   }
 
@@ -497,7 +499,7 @@ class Field6 {
       if (bigInt.isInstance(k)) {
         this.bn = bn;
         this.v = new Array(3);
-        this.v[0] = new Field2(bn, k);
+        this.v[0] = new Field2(bn.p, k);
         this.v[1] = this.v[2] = bn.Fp2_0;
       } else if (k instanceof Field2) {
         let v0 = k;
@@ -509,9 +511,9 @@ class Field6 {
         let rand = k;
         this.bn = bn;
         this.v = new Array(3);
-        this.v[0] = new Field2(bn, rand);
-        this.v[1] = new Field2(bn, rand);
-        this.v[2] = new Field2(bn, rand);
+        this.v[0] = new Field2(bn.p, rand);
+        this.v[1] = new Field2(bn.p, rand);
+        this.v[2] = new Field2(bn.p, rand);
       }
     }
 
@@ -523,10 +525,6 @@ class Field6 {
       this.v[1] = v1;
       this.v[2] = v2;
     }
-  }
-
-  randomize(rand) {
-    return new Field6(this.bn, rand);
   }
 
   zero() {
@@ -605,11 +603,9 @@ class Field6 {
         let d01 = this.v[0].add(this.v[1]).multiply(w.v[0].add(w.v[1])).subtract(d00.add(d11));
         let d02 = this.v[0].add(this.v[2]).multiply(w.v[0].add(w.v[2])).subtract(d00.add(d22));
         let d12 = this.v[1].add(this.v[2]).multiply(w.v[1].add(w.v[2])).subtract(d11.add(d22));
-        if (this.bn.b === 3) {
-            return new Field6(this.bn, d12.divV().add(d00), d22.divV().add(d01), d02.add(d11));
-        } else {
-            return new Field6(this.bn, d12.mulV().add(d00), d22.mulV().add(d01), d02.add(d11));
-        }
+        
+        return new Field6(this.bn, d12.divV().add(d00), d22.divV().add(d01), d02.add(d11));
+      
     } else if (w instanceof Field2) {
         if (this.bn.p !== w.p) {
             throw new Error("Operands are in different finite fields");
@@ -625,26 +621,20 @@ class Field6 {
     if (this.one() || this.zero()) {
         return this;
     }
-    if (this.bn.b === 3) {
-        return new Field6(this.bn, this.v[0].square().subtract(this.v[1].multiply(this.v[2]).divV()),
-            this.v[2].square().divV().subtract(this.v[0].multiply(this.v[1])).multiply(this.bn.zeta0),
-            this.v[0].multiply(this.v[2]).subtract(this.v[1].square()).multiply(this.bn.zeta1));
-    } else {
-        
-        return new Field6(this.bn, this.v[0].square().subtract(this.v[1].multiply(this.v[2]).mulV()),
-            this.v[2].square().mulV().subtract(this.v[0].multiply(this.v[1])).multiply(this.bn.zeta0),
-            this.v[0].multiply(this.v[2]).subtract(this.v[1].square()).multiply(this.bn.zeta1));
-    }
+   // console.log(this.bn.zeta0);
+    //console.log(this.bn.zeta1);
+ 
+    return new Field6(this.bn, this.v[0].square().subtract(this.v[1].multiply(this.v[2]).divV()),
+        this.v[2].square().divV().subtract(this.v[0].multiply(this.v[1])).multiply(this.bn.zeta0),
+        this.v[0].multiply(this.v[2]).subtract(this.v[1].square()).multiply(this.bn.zeta1));
   }
 
   normCompletion(k) {
     let d00 = this.v[0].multiply(k.v[0]);
     let d12 = this.v[1].multiply(k.v[2]).add(this.v[2].multiply(k.v[1]));
-    if (this.bn.b === 3) {
-        return d12.divV().add(d00);
-    } else {
-        return d12.mulV().add(d00);
-    }
+
+    return d12.divV().add(d00);
+  
   }
 
   square() {
@@ -664,13 +654,9 @@ class Field6 {
     let c1 = S1.subtract(T1).subtract(c3);
     let c2 = T1.subtract(c4).subtract(c0);
   
-    if (this.bn.b === 3) {
-        c0 = c0.add(c3.divV());
-        c1 = c1.add(c4.divV());
-    } else {
-        c0 = c0.add(c3.mulV());
-        c1 = c1.add(c4.mulV());
-    }
+    c0 = c0.add(c3.divV());
+    c1 = c1.add(c4.divV());
+  
     return new Field6(this.bn, c0, c1, c2);
   }
   mulV () {
@@ -694,15 +680,12 @@ class Field12 {
           }
       }
       if (arguments.length === 2) {
-          /*
-            * 
-            */
           if (bigInt.isInstance(k)) {
               this.bn = bn;
               this.v = new Array(6);
-              this.v[0] = new Field2(bn, k);
+              this.v[0] = new Field2(bn.p, k);
               for (let i = 1; i < 6; i++) {
-                  this.v[i] = new Field2(bn);
+                  this.v[i] = new Field2(bn.p);
               }
           } else if (k instanceof Array) {
               this.bn = bn;
@@ -712,14 +695,10 @@ class Field12 {
               this.bn = bn;
               this.v = new Array(6);
               for (let i = 0; i < 6; i++) {
-                  this.v[i] = new Field2(bn, rand);
+                  this.v[i] = new Field2(bn.p, rand);
               }
           }
       }
-  }
-
-  randomize (rand) {
-      return new Field12(this.bn, rand);
   }
 
   zero () {
@@ -733,18 +712,16 @@ class Field12 {
   }
 
   eq(o) {
-      if (!(o instanceof Field12)) {
-          return false;
-      }
-      let w = o;
-      
-      return this.bn === w.bn &&
-          this.v[0].eq(w.v[0]) &&
-          this.v[1].eq(w.v[1]) &&
-          this.v[2].eq(w.v[2]) &&
-          this.v[3].eq(w.v[3]) &&
-          this.v[4].eq(w.v[4]) &&
-          this.v[5].eq(w.v[5]);
+    if (!(o instanceof Field12)) {
+        return false;
+    }
+
+    return this.v[0].eq(o.v[0]) &&
+        this.v[1].eq(o.v[1]) &&
+        this.v[2].eq(o.v[2]) &&
+        this.v[3].eq(o.v[3]) &&
+        this.v[4].eq(o.v[4]) &&
+        this.v[5].eq(o.v[5]);
   }
 
   neg () {
@@ -758,19 +735,13 @@ class Field12 {
   frobenius () {
       let w = new Array(6);
       w[0] = this.v[0].conj();
-      if (this.bn.b === 3) {
-          w[1] = this.v[1].conj().mulV().multiply(this.bn.sigma);
-          w[2] = this.v[2].conj().multiply(this.bn.zeta0).mulI().neg();
-          w[3] = this.v[3].mulV().conj().multiply(this.bn.zeta0sigma);
-          w[4] = this.v[4].conj().multiply(this.bn.zeta1);
-          w[5] = this.v[5].conj().mulV().multiply(this.bn.zeta1sigma);
-      } else {
-          w[1] = this.v[1].mulV().conj().multiply(this.bn.zeta0sigma).neg();
-          w[2] = this.v[2].conj().multiply(this.bn.zeta0).mulI();
-          w[3] = this.v[3].conj().mulV().multiply(this.bn.zeta1sigma);
-          w[4] = this.v[4].conj().multiply(this.bn.zeta1);
-          w[5] = this.v[5].mulV().conj().multiply(this.bn.sigma);
-      }
+     
+      w[1] = this.v[1].conj().mulV().multiply(this.bn.sigma);
+      w[2] = this.v[2].conj().multiply(this.bn.zeta0).mulI().neg();
+      w[3] = this.v[3].mulV().conj().multiply(this.bn.zeta0sigma);
+      w[4] = this.v[4].conj().multiply(this.bn.zeta1);
+      w[5] = this.v[5].conj().mulV().multiply(this.bn.zeta1sigma);
+
       return new Field12(this.bn, w);
   }
 
@@ -829,7 +800,7 @@ class Field12 {
   }
 
   add (k) {
-      if (this.bn !== k.bn) {
+      if (this.bn.p !== k.bn.p) {
           throw new Error("Operands are in different finite fields");
       }
       let w = new Array(6);
@@ -840,7 +811,7 @@ class Field12 {
   }
 
   subtract  (k) {
-      if (this.bn !== k.bn) {
+      if (this.bn.p !== k.bn.p) {
           throw new Error("Operands are in different finite fields");
       }
       let w = new Array(6);
@@ -849,13 +820,17 @@ class Field12 {
       }
       return new Field12(this.bn, w);
   }
+  
+  divide(k) {
+    return this.multiply(k.inverse());
+  }
 
   multiply  (k) {
       if (k instanceof Field12) {
           if (k === this) {
               return this.square();
           }
-          if (this.bn !== k.bn) {
+          if (this.bn.p !== k.bn.p) {
               throw new Error("Operands are in different finite fields");
           }
           if (this.one() || k.zero()) {
@@ -879,11 +854,8 @@ class Field12 {
                   u01 = u01.add(d01);
                   let d03 = s01.add(this.v[3]).multiply(t01.add(k.v[3])).subtract(u01.add(d33).add(d13));
                   let d05 = z01.subtract(u01);
-                  if (this.bn.b === 3) {
-                      w[0] = d33.divV().add(d00);
-                  } else {
-                      w[0] = d33.mulV().add(d00);
-                  }
+
+                  w[0] = d33.divV().add(d00);
                   w[1] = d01;
                   w[2] = d11;
                   w[3] = d03;
@@ -910,15 +882,10 @@ class Field12 {
                   let s45 = this.v[4].add(this.v[5]);
                   let d05 = s01.add(s45).multiply(t01).subtract(u01.add(d04).add(d15));
                   let d25 = s23.add(s45).multiply(k.v[3]).subtract(u23.add(d35));
-                  if (this.bn.b === 3) {
-                      w[0] = d15.add(d33).divV().add(d00);
-                      w[1] = d25.divV().add(d01);
-                      w[2] = d35.divV().add(d02).add(d11);
-                  } else {
-                      w[0] = d15.add(d33).mulV().add(d00);
-                      w[1] = d25.mulV().add(d01);
-                      w[2] = d35.mulV().add(d02).add(d11);
-                  }
+                 
+                  w[0] = d15.add(d33).divV().add(d00);
+                  w[1] = d25.divV().add(d01);
+                  w[2] = d35.divV().add(d02).add(d11);
                   w[3] = d03;
                   w[4] = d04.add(d13);
                   w[5] = d05.add(d23);
@@ -943,15 +910,11 @@ class Field12 {
               let s45 = this.v[4].add(this.v[5]);
               let d05 = s01.add(s45).multiply(k.v[0]).subtract(u01.add(d04));
               let d25 = s23.add(s45).multiply(t23).subtract(u23.add(d23).add(d24).add(d35));
-              if (this.bn.b === 3) {
-                  w[0] = d24.add(d33).divV().add(d00);
-                  w[1] = d25.divV().add(d01);
-                  w[2] = d35.divV().add(d02);
-              } else {
-                  w[0] = d24.add(d33).mulV().add(d00);
-                  w[1] = d25.mulV().add(d01);
-                  w[2] = d35.mulV().add(d02);
-              }
+             
+              w[0] = d24.add(d33).divV().add(d00);
+              w[1] = d25.divV().add(d01);
+              w[2] = d35.divV().add(d02);
+          
               w[3] = d03;
               w[4] = d04.add(d13).add(d22);
               w[5] = d05.add(d23);
@@ -986,21 +949,13 @@ class Field12 {
               let d03 = s01.add(s23).multiply(t01.add(t23)).subtract(u01.add(u23).add(d02).add(d13));
               let d05 = s01.add(s45).multiply(t01.add(t45)).subtract(u01.add(u45).add(d04).add(d15));
               let d25 = s23.add(s45).multiply(t23.add(t45)).subtract(u23.add(u45).add(d24).add(d35));
-              if (this.bn.b === 3) {
-                  w[0] = d15.add(d24).add(d33).divV().add(d00);
-                  w[1] = d25.divV().add(d01);                  
-                  w[2] = d35.add(d44).divV().add(d02).add(d11);
-                  w[3] = d45.divV().add(d03);                  
-                  w[4] = d55.divV().add(d04).add(d13).add(d22);
-                  w[5] = d05.add(d23);                            
-              } else {
-                  w[0] = d15.add(d24).add(d33).mulV().add(d00);
-                  w[1] = d25.mulV().add(d01);
-                  w[2] = d35.add(d44).mulV().add(d02).add(d11);
-                  w[3] = d45.mulV().add(d03);
-                  w[4] = d55.mulV().add(d04).add(d13).add(d22);
-                  w[5] = d05.add(d23);
-              }
+             
+              w[0] = d15.add(d24).add(d33).divV().add(d00);
+              w[1] = d25.divV().add(d01);
+              w[2] = d35.add(d44).divV().add(d02).add(d11);
+              w[3] = d45.divV().add(d03);
+              w[4] = d55.divV().add(d04).add(d13).add(d22);
+              w[5] = d05.add(d23);
           }
 
           return new Field12(this.bn, w);
@@ -1033,14 +988,8 @@ class Field12 {
   decompress (h) {
       
       if (!h.v[1].zero()) {
-          if (this.bn.b === 2) {
-              h.v[3] = h.v[5].square().mulV().add(h.v[2].square().multiply(new Number(3))).subtract(h.v[4].twice(1)).multiply(h.v[1].twice(2).inverse());
-              h.v[0] = h.v[3].square().twice(1).add(h.v[1].multiply(h.v[5])).subtract(h.v[4].multiply(h.v[2]).multiply(new Number(3))).mulV().add(bigInt.one);
-              
-          } else {
-              h.v[3] = h.v[5].square().divV().add(h.v[2].square().multiply(new Number(3))).subtract(h.v[4].twice(1)).multiply(h.v[1].twice(2).inverse());
-              h.v[0] = h.v[3].square().twice(1).add(h.v[1].multiply(h.v[5])).subtract(h.v[4].multiply(h.v[2]).multiply(new Number(3))).divV().add(bigInt.one);
-          }
+          h.v[3] = h.v[5].square().divV().add(h.v[2].square().multiply(new Number(3))).subtract(h.v[4].twice(1)).multiply(h.v[1].twice(2).inverse());
+          h.v[0] = h.v[3].square().twice(1).add(h.v[1].multiply(h.v[5])).subtract(h.v[4].multiply(h.v[2]).multiply(new Number(3))).divV().add(bigInt.one);
       } else {
           h.v[3] = h.v[2].multiply(h.v[5]).twice(1).multiply(h.v[4].inverse());
           h.v[0] = h.v[3].square().twice(1).subtract(h.v[4].multiply(h.v[2]).multiply(new Number(3))).mulV().add(bigInt.one);
@@ -1052,8 +1001,6 @@ class Field12 {
           return this;
       }
 
-      
-      
       let a0 =  new Field4(this.bn, this.v[0], this.v[3]);
       let a1 =  new Field4(this.bn, this.v[1], this.v[4]);
       let a2 =  new Field4(this.bn, this.v[2], this.v[5]);
@@ -1066,17 +1013,8 @@ class Field12 {
       let c1 = S1.subtract(T1).subtract(c3);
       let c2 = T1.subtract(c4).subtract(c0);
       
-      
-      
-      
-      if (this.bn.b === 3) {
-          c0 = c0.add(c3.divV());
-          c1 = c1.add(c4.divV());
-      } else {
-          c0 = c0.add(c3.mulV());
-          c1 = c1.add(c4.mulV());
-      }
-
+      c0 = c0.add(c3.divV());
+      c1 = c1.add(c4.divV());
       let v = new Array(6);
       v[0] = c0.re;
       v[1] = c1.re;
@@ -1090,25 +1028,16 @@ class Field12 {
   compressedSquare () {
       
     let h = new Field12(this.bn.Fp12_0);
-    if (this.bn.b === 2) {
-      let A23 = this.v[1].add(this.v[4]).multiply(this.v[1].add(this.v[4].mulV()));
-      let A45 = this.v[2].add(this.v[5]).multiply(this.v[2].add(this.v[5].mulV()));
-      let B45 = this.v[2].multiply(this.v[5]);
-      let B23 = this.v[1].multiply(this.v[4]);
-      h.v[1] = this.v[1].add(B45.mulV().multiply(new Number(3))).twice(1);
-      h.v[4] = A45.subtract(B45.add(B45.mulV())).multiply(new Number(3)).subtract(this.v[4].twice(1));
-      h.v[2] = A23.subtract(B23.add(B23.mulV())).multiply(new Number(3)).subtract(this.v[2].twice(1));
-      h.v[5] = this.v[5].add(B23.multiply(new Number(3))).twice(1);
-    } else {
-      let A23 = this.v[1].add(this.v[4]).multiply(this.v[1].add(this.v[4].divV()));
-      let A45 = this.v[2].add(this.v[5]).multiply(this.v[2].add(this.v[5].divV()));
-      let B45 = this.v[2].multiply(this.v[5]);
-      let B23 = this.v[1].multiply(this.v[4]);
-      h.v[1] = this.v[1].add(B45.divV().multiply(new Number(3))).twice(1);
-      h.v[4] = A45.subtract(B45.add(B45.divV())).multiply(new Number(3)).subtract(this.v[4].twice(1));
-      h.v[2] = A23.subtract(B23.add(B23.divV())).multiply(new Number(3)).subtract(this.v[2].twice(1));
-      h.v[5] = this.v[5].add(B23.multiply(new Number(3))).twice(1);
-    }
+    
+    let A23 = this.v[1].add(this.v[4]).multiply(this.v[1].add(this.v[4].divV()));
+    let A45 = this.v[2].add(this.v[5]).multiply(this.v[2].add(this.v[5].divV()));
+    let B45 = this.v[2].multiply(this.v[5]);
+    let B23 = this.v[1].multiply(this.v[4]);
+    h.v[1] = this.v[1].add(B45.divV().multiply(new Number(3))).twice(1);
+    h.v[4] = A45.subtract(B45.add(B45.divV())).multiply(new Number(3)).subtract(this.v[4].twice(1));
+    h.v[2] = A23.subtract(B23.add(B23.divV())).multiply(new Number(3)).subtract(this.v[2].twice(1));
+    h.v[5] = this.v[5].add(B23.multiply(new Number(3))).twice(1);
+  
     
     return h;
   }
@@ -1121,21 +1050,12 @@ class Field12 {
     let c0sqr = this.v[2].square();
     let c1sqr = this.v[5].square();
     let a0, a1, b0, b1, c0, c1;
-    if (this.bn.b === 3) {
-      a0 = a1sqr.divV().add(a0sqr).multiply(new Number(3)).subtract(this.v[0].twice(1));
-      a1 = this.v[0].add(this.v[3]).square().subtract(a0sqr).subtract(a1sqr).multiply(new Number(3)).add(this.v[3].twice(1));
-      b0 = this.v[2].add(this.v[5]).square().subtract(c0sqr).subtract(c1sqr).multiply(new Number(3)).divV().add(this.v[1].twice(1));
-      b1 = c0sqr.add(c1sqr.divV()).multiply(new Number(3)).subtract(this.v[4].twice(1));
-      c0 = b1sqr.divV().add(b0sqr).multiply(new Number(3)).subtract(this.v[2].twice(1));
-      c1 = this.v[1].add(this.v[4]).square().subtract(b0sqr).subtract(b1sqr).multiply(new Number(3)).add(this.v[5].twice(1));
-    } else {
-      a0 = a1sqr.mulV().add(a0sqr).multiply(new Number(3)).subtract(this.v[0].twice(1));
-      a1 = this.v[0].add(this.v[3]).square().subtract(a0sqr).subtract(a1sqr).multiply(new Number(3)).add(this.v[3].twice(1));
-      b0 = this.v[2].add(this.v[5]).square().subtract(c0sqr).subtract(c1sqr).multiply(new Number(3)).mulV().add(this.v[1].twice(1));
-      b1 = c0sqr.add(c1sqr.mulV()).multiply(new Number(3)).subtract(this.v[4].twice(1));
-      c0 = b1sqr.mulV().add(b0sqr).multiply(new Number(3)).subtract(this.v[2].twice(1));
-      c1 = this.v[1].add(this.v[4]).square().subtract(b0sqr).subtract(b1sqr).multiply(new Number(3)).add(this.v[5].twice(1));
-    }
+    a0 = a1sqr.divV().add(a0sqr).multiply(new Number(3)).subtract(this.v[0].twice(1));
+    a1 = this.v[0].add(this.v[3]).square().subtract(a0sqr).subtract(a1sqr).multiply(new Number(3)).add(this.v[3].twice(1));
+    b0 = this.v[2].add(this.v[5]).square().subtract(c0sqr).subtract(c1sqr).multiply(new Number(3)).divV().add(this.v[1].twice(1));
+    b1 = c0sqr.add(c1sqr.divV()).multiply(new Number(3)).subtract(this.v[4].twice(1));
+    c0 = b1sqr.divV().add(b0sqr).multiply(new Number(3)).subtract(this.v[2].twice(1));
+    c1 = this.v[1].add(this.v[4]).square().subtract(b0sqr).subtract(b1sqr).multiply(new Number(3)).add(this.v[5].twice(1));
     
     let m = new Array(6);
     m[0] = a0;
@@ -1174,11 +1094,8 @@ class Field12 {
       
     let re = new Field6(this.bn, this.v[0], this.v[2], this.v[4]);
     let im = new Field6(this.bn, this.v[1], this.v[3], this.v[5]);
-    if (this.bn.b === 3) {
-        return re.square().subtract(im.square().divV());
-    } else {
-        return re.square().subtract(im.square().mulV());
-    }
+    return re.square().subtract(im.square().divV());
+   
   }
 
   inverse () {
@@ -1193,9 +1110,6 @@ class Field12 {
   }
 
   plainExp (k) {
-    /*
-      * This method is likely to be very fast, because k is very sparse
-      */
     let w = this;
     for (let i = k.bitLength()-2; i >= 0; i--) {
         w = w.square();

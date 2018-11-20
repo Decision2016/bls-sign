@@ -39,7 +39,6 @@ class Curve {
       let x, y;
       do {
           x = ExNumber.mod(  ExNumber.construct(2*this.bn.p.bitLength(), rand), this.bn.p);
-          console.log('input', x.multiply(x).multiply(x).add(this.b))
           y = this.bn.sqrt(x.multiply(x).multiply(x).add(this.b));
       } while (y === null);
       return new Point(this, x, y);
@@ -89,19 +88,11 @@ class Curve2 {
       this.Fp2_1 = E.bn.Fp2_1;
       this.Fp2_i = E.bn.Fp2_i;
       this.infinity = new Point2(this);
-      if (E.b.equals( 3 )) {
-          
-          this.bt = new Field2(E.bn.p, E.b).mulV(); 
-          this.xt = new Field2(E.bn.p, bigInt('1'));
-
-          this.yt = this.xt.multiply(this.xt).multiply(this.xt).add(this.bt).sqrt();
-          console.log('this.xt this.yt this.bt', this.xt, this.yt, this.bt);
-      } else {
-          this.bt = this.Fp2_1.subtract(this.Fp2_i); 
-          this.xt = this.Fp2_i.neg();
-          this.yt = this.Fp2_1;
-      }
-    
+      
+      this.bt = new Field2(E.bn.p, E.b).mulV(); 
+      this.xt = new Field2(E.bn.p, bigInt('1'));
+      this.yt = this.xt.multiply(this.xt).multiply(this.xt).add(this.bt).sqrt();
+  
       this.Gt = new Point2(this, this.xt, this.yt);
       this.Gt = this.Gt.multiply(E.bn.ht).norm();
       this.pp16Gt = new Array(Math.round((this.E.bn.n.bitLength() + 3)/4));

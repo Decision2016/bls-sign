@@ -393,7 +393,6 @@ class Point2 {
                 throw new Error("pointNotOnCurve");
             } else {
                 this.y = this.x.cube().add(this.E.bt).sqrt();
-                console.log('this.y', y, this.y, this.x);
                 if (this.y === null) {
                     throw new Error("pointNotOnCurve");
                 }

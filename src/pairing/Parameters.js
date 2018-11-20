@@ -131,7 +131,7 @@ class Parameters {
               break;
           case 256:
               this.u = bigInt("110000010000000000000000000000000000000000001000000000001000011", 2);
-              
+              this.u = bigInt("4965661367192848881")
               break;
           case 264:
               this.u = bigInt("11000000000000000001000000000000000000000000000000000100000000011", 2);
@@ -247,10 +247,11 @@ class Parameters {
               throw new Error(invalidParams + ": Field size in bits must be a multiple of 8 between 48 and 512");
 
       }
+
+      this.p = bigInt(36).multiply(this.u.pow(this._4)).add( bigInt(36).multiply(this.u.pow(bigInt(3))) ).add(bigInt(24).multiply(this.u.pow(bigInt(2)))).add(this._6.multiply(this.u)).add(this._1);
       
-      this.p = this.u.add(this._1).multiply(this._6.multiply(this.u)).add(this._4).multiply(this.u).add(this._1).multiply(this._6.multiply(this.u)).add(this._1);
+      //this.p = this.u.add(this._1).multiply(this._6.multiply(this.u)).add(this._4).multiply(this.u).add(this._1).multiply(this._6.multiply(this.u)).add(this._1);
       if (!this.p.mod(this._4) == (bigInt(3) )) {
-      
         throw new Error("Error!!!! p mod 3 doesn't work");
       }
 
@@ -276,7 +277,6 @@ class Parameters {
       
       this.sqrtExponent = this.p.add(this._1).shiftRight(2);
       this.cbrtExponent = this.p.add(this.p).add(this._1).divide(this._9);
-
       this.sqrtExponent2 = this.p.multiply(this.p).add(this._7).shiftRight(4);
 
       this.cbrtExponent2 = this.p.multiply(this.p).add(this._2).divide(this._9);
@@ -284,57 +284,14 @@ class Parameters {
       this.zeta0sigma = this.zeta0.multiply(this.sigma).mod(this.p);
       this.zeta1sigma = this.zeta1.multiply(this.sigma).mod(this.p);
 
-      this.invSqrtMinus2 = this.p.subtract(this._2).modPow(this.p.subtract(this._1).subtract(this.p.add(this._1).shiftRight(2)), this.p);
-
-      console.log('invsqrt222', this.invSqrtMinus2)
-
-
-      this.sqrtI = new Field2(this.p, this.invSqrtMinus2, (ExNumber.signum(this.invSqrtMinus2) !== 0) ? this.p.subtract(this.invSqrtMinus2) : this.invSqrtMinus2, false);
-    
-      console.log('this.sqrtI', this.sqrtI)
-
+      //this.invSqrtMinus2 = this.p.subtract(this._2).modPow(this.p.subtract(this._1).subtract(this.p.add(this._1).shiftRight(2)), this.p);
+      //this.sqrtI = new Field2(this.p, this.invSqrtMinus2, (ExNumber.signum(this.invSqrtMinus2) !== 0) ? this.p.subtract(this.invSqrtMinus2) : this.invSqrtMinus2, false);
+  
       this.Fp2_0 = new Field2(this.p, this._0);
       this.Fp2_1 = new Field2(this.p, this._1);
       this.Fp2_i = new Field2(this.p, this._0, this._1, false);
       this.Fp12_0 = new Field12(this, this._0);
       this.Fp12_1 = new Field12(this, this._1);
-
-      this.latInv = new Array(4);
-      this.latInv[0] = this.u.shiftLeft(1).add(this._3).multiply(this.u).add(this._1);
-      this.latInv[1] = this.u.multiply(this._3).add(this._2).multiply(this.u).multiply(this.u).shiftLeft(2).add(this.u);
-      this.latInv[2] = this.u.multiply(this._3).add(this._2).multiply(this.u).multiply(this.u).shiftLeft(1).add(this.u);
-      this.latInv[3] = this.u.multiply(this.u).shiftLeft(1).add(this.u).negate();
-
-      this.latRed = new Array(4);
-      for (let i = 0; i < 4; i++) {
-          this.latRed[i] = new Array(4);
-      }
-      /*
-          u+1,       u,      u,  -2*u,
-          2*u+1,    -u, -(u+1),    -u,
-          2*u,   2*u+1,  2*u+1, 2*u+1,
-          u-1,   4*u+2, -2*u+1,   u-1
-        */
-
-      this.latRed[0][0] = this.u.add(this._1);
-      this.latRed[0][1] = this.u;
-      this.latRed[0][2] = this.u;
-      this.latRed[0][3] = this.u.shiftLeft(1).negate();
-
-      this.latRed[1][0] = this.u.shiftLeft(1).add(this._1);
-      this.latRed[1][1] = this.u.negate();
-      this.latRed[1][2] = this.u.add(this._1).negate();
-      this.latRed[1][3] = this.u.negate();
-
-      this.latRed[2][0] = this.u.shiftLeft(1);
-      this.latRed[2][1] = this.u.shiftLeft(1).add(this._1);
-      this.latRed[2][2] = this.u.shiftLeft(1).add(this._1);
-      this.latRed[2][3] = this.u.shiftLeft(1).add(this._1);
-
-      this.latRed[3][0] = this.u.subtract(this._1);
-      this.latRed[3][1] = this.u.shiftLeft(2).add(this._2);
-      this.latRed[3][2] = this.u.shiftLeft(1).negate().add(this._1);
-      this.latRed[3][3] = this.u.subtract(this._1);
     }
   }
 
