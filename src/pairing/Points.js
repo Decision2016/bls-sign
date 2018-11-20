@@ -385,48 +385,6 @@ class Point2 {
             }
         }
 
-        else if (!(y instanceof Field2)) {
-            let yBit = y;
-            this.E = E;
-            this.x = x;
-            if (this.x.zero()) {
-                throw new Error("pointNotOnCurve");
-            } else {
-                this.y = this.x.cube().add(this.E.bt).sqrt();
-                if (this.y === null) {
-                    throw new Error("pointNotOnCurve");
-                }
-                if (ExNumber.testBit(this.y.re, 0) !== ((yBit & 1) === 1)) {
-                    this.y = this.y.neg();
-                }
-            }
-            this.z = this.E.Fp2_1;
-        }
-        else if (!(x instanceof Field2)) {
-            let xTrit = x;
-            this.E = E;
-            this.y = y;
-            if (this.y.zero()) {
-                throw new Error(pointNotOnCurve);
-            } else {
-                this.x = this.y.square().subtract(this.E.bt).cbrt();
-                if (this.x === null) {
-                    throw new Error(pointNotOnCurve);
-                }
-                
-                if (this.x.re.mod(this.E.E.bn._3).intValue() !== xTrit) {
-                    let zeta = this.E.E.bn.zeta;
-                    this.x = this.x.multiply(zeta);
-                    if (this.x.re.mod(this.E.E.bn._3).intValue() !== xTrit) {
-                        this.x = this.x.multiply(zeta);
-                        if (this.x.re.mod(this.E.E.bn._3).intValue() !== xTrit) {
-                            throw new Error(pointNotOnCurve);
-                        }
-                    }
-                }
-            }
-            this.z = this.E.Fp2_1;
-        }
     }
     if (arguments.length === 4) {
         this.E = E;
@@ -438,27 +396,6 @@ class Point2 {
 
   toString() {
     return ('('+this.x.toString()+','+this.y.toString()+','+this.z.toString()+')');
-  }
-
-  frobex (k) {
-    if (!this.z.one()) {
-        throw new Error("Error");
-    }
-    let bn = this.E.E.bn;
-    switch (k) {
-        case 1:
-            return (bn.b === 3) ?
-                new Point2(this.E, this.x.mulI().conj().multiply(bn.zeta), this.y.mulV().conj().multiply(bn.zeta0sigma), this.z) :
-                new Point2(this.E, this.x.conj().mulI().multiply(bn.zeta), this.y.conj().mulV().multiply(bn.zeta1sigma), this.z);
-        case 2:
-            return new Point2(this.E, this.x.multiply(bn.zeta1).neg(), this.y.neg(), this.z);
-        case 3:
-            return (bn.b === 3) ?
-                new Point2(this.E, this.x.mulI().conj(), this.y.mulV().conj().multiply(bn.zeta0sigma).neg(), this.z) :
-                new Point2(this.E, this.x.conj().mulI(), this.y.conj().mulV().multiply(bn.zeta1sigma).neg(), this.z);
-        default:
-            return null;
-    }
   }
 
   zero() {
@@ -607,42 +544,6 @@ class Point2 {
     }
     return A.norm();
   }
-
-  simul (kP, P, kQ, Q, kR, R, kS, S) {
-    let hV = new Array(16);
-    P = P.norm();
-    if (ExNumber.signum(kP) < 0) {
-        kP = kP.negate(); P = P.neg();
-    }
-    Q = Q.norm();
-    if (ExNumber.signum(kQ) < 0) {
-        kQ = kQ.negate(); Q = Q.neg();
-    }
-    R = R.norm();
-    if (ExNumber.signum(kR) < 0) {
-        kR = kR.negate(); R = R.neg();
-    }
-    S = S.norm();
-    if (ExNumber.signum(kS) < 0) {
-        kS = kS.negate(); S = S.neg();
-    }
-    hV[0] = this.E.infinity;
-    hV[1] = P; hV[2] = Q; hV[4] = R; hV[8] = S;
-    for (let i = 2; i < 16; i <<= 1) {
-        for (let j = 1; j < i; j++) {
-            hV[i + j] = hV[i].add(hV[j]);
-        }
-    }
-    let t = Math.max(Math.max(kP.bitLength(), kQ.bitLength()), Math.max(kR.bitLength(), kS.bitLength()));
-    let V = this.E.infinity;
-    for (let i=t-1; i>=0; i--) {
-        let j = (ExNumber.testBit(kS, i)?8:0) | (ExNumber.testBit(kR, i)?4:0) | (new ExNumber.testBit(kQ, i) ?   2 : 0) | (new ExNumber.testBit(kP, i)?1:0);
-        V = V.twice(2).add(hV[j]);
-    }
-    return V.norm();
-  }
-
-
 }
 
 export {Point, Point2}

@@ -88,32 +88,36 @@ class Curve2 {
       this.Fp2_1 = E.bn.Fp2_1;
       this.Fp2_i = E.bn.Fp2_i;
       this.infinity = new Point2(this);
-      
-      this.bt = new Field2(E.bn.p, E.b).mulV(); 
-      this.xt = new Field2(E.bn.p, bigInt('1'));
-      this.yt = this.xt.multiply(this.xt).multiply(this.xt).add(this.bt).sqrt();
-  
+      //b2 = FQ2([3, 0]) / FQ2([9, 1])
+
+      //this.bt = new Field2(E.bn.p, bigInt('3')).divide(new Field2(E.bn.p, bigInt('9'), bigInt('1'), false));
+      this.bt = new Field2(E.bn.p, bigInt('3')).mulV();
+
+      this.xt = new Field2(E.bn.p, bigInt('1'), bigInt.zero, false);
+      this.yt = this.xt.cube().add(this.bt).sqrt();
+      /*if (E.bn.m == 192) {
+        this.yt = new Field2(E.bn.p, 
+          bigInt('464234817898553698934248835714285957919113756413497973093'),
+        bigInt('3076058936254399553170054352418567043893384998761804393444'), false);
+      } else if (E.bn.m == 128) {
+        this.yt = new Field2(E.bn.p, 
+          bigInt('188171377329717814604978879580061544903'),
+        bigInt('77524232476859237612883652495923276497'), false);
+      } else if (E.bn.m == 56) {
+        this.yt = new Field2(E.bn.p, 
+          bigInt('21754382168697137'),
+        bigInt('13729974729342851'), false);
+      } else if (E.bn.m == 256) {
+        this.xt = new Field2(E.bn.p, 
+          bigInt('10857046999023057135944570762232829481370756359578518086990519993285655852781'),
+        bigInt('11559732032986387107991004021392285783925812861821192530917403151452391805634'), false);
+        this.yt = new Field2(E.bn.p, 
+          bigInt('8495653923123431417604973247489272438418190587263600148770280649306958101930'),
+        bigInt('4082367875863433681332203403145435568316851327593401208105741076214120093531'), false);
+      }*/
+      console.log('this.yt',   this.yt.toString())
       this.Gt = new Point2(this, this.xt, this.yt);
       this.Gt = this.Gt.multiply(E.bn.ht).norm();
-      this.pp16Gt = new Array(Math.round((this.E.bn.n.bitLength() + 3)/4));
-      for (let i = 0; i < Math.round((this.E.bn.n.bitLength() + 3)/4); i++) {
-          this.pp16Gt[i] = new Array(16);
-      }
-      this.pp16Gi = this.pp16Gt[0];
-      this.pp16Gi[0] = this.infinity;
-      this.pp16Gi[1] = this.Gt;
-      for (let i = 1, j = 2; i <= 7; i++, j += 2) {
-          this.pp16Gi[j] = this.pp16Gi[i].twice(1);
-          this.pp16Gi[j+1] = this.pp16Gi[j].add(this.Gt);
-      }
-      for (let i = 1; i < this.pp16Gt.length; i++) {
-          this.pp16Gh = this.pp16Gi;
-          this.pp16Gi = this.pp16Gt[i];
-          this.pp16Gi[0] = this.pp16Gh[0];
-          for (let j = 1; j < 16; j++) {
-              this.pp16Gi[j] = this.pp16Gh[j].twice(4);
-          }
-      }
     }
   }
 
@@ -139,18 +143,8 @@ class Curve2 {
   }
 
   kG(k) {
-    let g =  ExNumber.mod(k, this.E.bn.n); 
 
-    let A = this.infinity;
-    for (let i = 0, w = bigInt(0); i < this.pp16Gt.length; i++, w = w.shiftRight(4)) {
-      if ((i & 7) === 0) {
-          w = g;
-          g = g.shiftRight(32);
-      }
-
-      A = A.add(this.pp16Gt[i][w.and( 0xf)]);
-    }
-    return A;
+    return this.Gt.multiply(k);
   }
 }
 
