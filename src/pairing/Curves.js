@@ -143,7 +143,6 @@ class Curve2 {
   }
 
   kG(k) {
-
     return this.Gt.multiply(k);
   }
 }

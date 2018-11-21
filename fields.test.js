@@ -22,8 +22,6 @@ describe('Fields', () => {
 
     const sqrt11 = _11.sqrt();
 
-    console.log('sqrt11', sqrt11);
-
     expect (_11.eq(sqrt11.multiply(sqrt11))).toBeTruthy();
     // 2 * 2 == 4
     expect( _2.multiply(_2).eq(_4) ).toBeTruthy();
@@ -47,7 +45,6 @@ describe('Fields', () => {
     expect(x.add(f).eq(fpx)).toBeTruthy();
     expect( f.divide( f ).eq( one ) ).toBeTruthy();
     // one / f + x / f == (one + x) / f
-    console.log('p', bn.p.toString())
 
     expect(one.divide(f).add(x.divide(f)).eq(one.add(x).divide(f))).toBeTruthy();
     // one * f + x * f == (one + x) * f
@@ -94,13 +91,10 @@ describe('Fields', () => {
     const one = new Field12(bn, _1);
 
     expect(x.one()).toBeTruthy();
-
     expect(x.add(f).eq(fpx)).toBeTruthy();
+
     expect( f.divide( f ).eq( one ) ).toBeTruthy();
     // one / f + x / f == (one + x) / f
-
-    console.log('f.inv()', f.inverse().toString())
-    console.log('f.inv().inv()', f.inverse().inverse().toString())
 
     expect(one.divide(f).add(x.divide(f)).eq(one.add(x).divide(f))).toBeTruthy();
     // one * f + x * f == (one + x) * f

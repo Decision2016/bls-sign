@@ -284,74 +284,10 @@ class Point {
     } else R = this.multiply(ks).add(Y.multiply(ks));
     return R;
   }
-
-  getSerializedTable() {
-    if (this.preComp === null) {
-        let length = Math.floor((this.E.bn.n.bitLength() + 3)/4);
-        this.preComp = new Array(length);
-        for (let i = 0; i < length; i++) this.preComp[i] = new Array(256);
-        let P = this.norm();
-        let preCompi = this.preComp[0];
-        preCompi[0] = this.E.infinity;
-        preCompi[1] = P;
-        for (let i = 1, j = 2; i <= 127; i++, j += 2) {
-            preCompi[j] = preCompi[i].twice(1).norm();
-            preCompi[j+1] = preCompi[j].add(P).norm();
-        }
-        for (let i = 1; i < this.preComp.length; i++) {
-            let preComph = preCompi;
-            preCompi = this.preComp[i];
-            preCompi[0] = preComph[0];
-            for (let j = 1; j < 256; j++) {
-                preCompi[j] = preComph[j].twice(8).norm();
-            }
-        }
-    }
-  }
-
-  toByteArray(formFlags) {
-    let len = Math.floor((this.E.bn.p.bitLength() + 7)/8);
-    let resLen = 1, pc = 0;
-    let P = this.norm();
-    let osX = null, osY = null;
-    if (!P.zero()) {
-        osX = ExNumber.toByteArray(P.x);
-        resLen += len;
-        if ((formFlags & 2) !== 0) {
-            pc |= 2 | (ExNumber.testBit(P.y, 0) ? 1 : 0);
-        }
-        if ((formFlags & 4) !== 0) {
-            pc |= 4;
-            osY = ExNumber.toByteArray(P.y);
-            resLen += len;
-        }
-    }
-    let buf = new Uint8Array(resLen);
-    for (let i = 0; i < buf.length; i++) {
-        buf[i] = 0;
-    }
-    buf[0] = pc;
-    if (osX !== null) {
-        if (osX.length <= len) {
-            Point.arrayCopy(osX,0,buf,1+len-osX.length,osX.length);
-        } else {
-            Point.arrayCopy(osX,1,buf,1,len);
-        }
-    }
-    if (osY !== null) {
-        if (osY.length <= len) {
-            Point.arrayCopy(osY,0,buf,1+2*len-osY.length,osY.length);
-        } else {
-            Point.arrayCopy(osY,1,buf,1+len,len);
-        }
-    }
-    return buf;
-  }
 }
 
 
 class Point2 {
-
   constructor (E, x, y, z) {
 
     if (arguments.length === 1) {

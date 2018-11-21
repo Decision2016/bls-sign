@@ -126,7 +126,7 @@ class Pairing {
             
             w[0] = A.multiply(P.y); 
             w[1] = B.multiply(P.x.negate()); 
-            w[3] = B.multiply(Q.x).subtract(A.multiply(Q.y)); 
+            w[3] = B.multiply(Q.x).subtract(A.multiply(Q.y));
             w[2] = w[4] = w[5] = this.E2.Fp2_0;
             line = new Field12(this.bn, w);
             f = f.multiply(line);
