@@ -12,6 +12,8 @@ const _7 = bigInt('7')
 
 class Field2 {
   constructor (p, re, im, reduce) {
+    this.poly_coeffs = [1, 0];
+    this.degree = this.poly_coeffs.length;
     if(arguments.length === 1) {
       this.p = p
       this.re = _0
@@ -46,19 +48,19 @@ class Field2 {
   }
 
   zero() {
-    return ExNumber.signum(this.re) === 0 && ExNumber.signum(this.im) === 0;
+    //console.log('this.re', this.re)
+    return this.re.isZero() && this.im.isZero();
   }
 
   one() {
-    return this.re.compareTo(_1) === 0 && ExNumber.signum(this.im) === 0;
+    return this.re.compareTo(_1) === 0 && this.im.isZero();
   }
 
   eq(u) {
     if (!(u instanceof Field2)) {
         return false;
     }
-    return this.re.compareTo(u.re) === 0 &&
-        this.im.compareTo(u.im) === 0;
+    return this.re.equals(u.re) && this.im.equals(u.im) ;
   }
 
   neg() {
@@ -145,9 +147,18 @@ class Field2 {
     if (v instanceof Field2) {
       return this.multiply(v.inverse());
     } else if (bigInt.isInstance(v)) {
-      return this.multiply(new Field2(this.p, v).inverse());
+      //v = v.mod(this.p);
+
+      let nr = this.re.multiply( v.modInv(this.p) );
+      let ni = this.im.multiply( v.modInv(this.p) );
+      return new Field2(this.p, nr, ni, true);
     }
     return null;
+  }
+
+  inverse() {
+    const d = this.re.multiply(this.re).add(this.im.multiply(this.im)).modInv(this.p);
+    return new Field2(this.p, this.re.multiply(d), this.p.subtract(this.im).multiply(d), true);
   }
 
   multiply (v) {
@@ -227,10 +238,7 @@ class Field2 {
         true);
   }
 
-  inverse () {
-    let d = this.re.multiply(this.re).add(this.im.multiply(this.im)).modInv(this.p);
-    return new Field2(this.p, this.re.multiply(d), this.p.subtract(this.im).multiply(d), true);
-  }
+
 
   mulI () {
     return new Field2(this.p, (ExNumber.signum(this.im) !== 0) ? this.p.subtract(this.im) : this.im, this.re, false);

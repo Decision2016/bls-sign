@@ -1,6 +1,6 @@
 const {BLSSigner, BLSSecretKey, BLSSignature, BLSPublicKey} =  require( './src/index' )
 
-const signer = new BLSSigner(192)
+const signer = new BLSSigner(256)
 
 const Q = signer.getRandomPointOnE()
 const H = signer.getRandomPointOnEt()

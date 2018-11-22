@@ -1,11 +1,13 @@
 
 import CryptoRandom from './src/pairing/Rnd'
-import {Point2} from './src/pairing/Points'
+import {Point2, Point} from './src/pairing/Points'
 import Parameters from './src/pairing/Parameters'
 import {Field2, Field12} from './src/pairing/Fields'
 import {Curve, Curve2} from './src/pairing/Curves'
 import Pairing from './src/pairing/Pairing'
 import bigInt from 'big-integer'
+
+
 describe('Fields', () => {
   test('Field without extensions test', () => {
 
@@ -101,6 +103,65 @@ describe('Fields', () => {
     expect(one.multiply(f).add(x.multiply(f)).eq( one.add(x).multiply(f) )  ).toBeTruthy();
     // x ** (field_modulus ** 2 - 1) == one
     expect(x.exp(bn.p.pow(_2).subtract(_1) ).eq(one) ).toBeTruthy();
+
+  })
+
+});
+
+describe('Curves', () => {
+
+  test('Curve point test', () => {
+    
+    let bn = new Parameters(256)
+    let E = new Curve(bn)
+
+    const G = E.G;
+    expect(G.neg().neg().eq(G)).toBeTruthy();
+    expect(G.twice(1).add(G).add(G).eq(G.twice(2))).toBeTruthy();
+    expect(G.twice(1).eq(G)).toBeFalsy();
+    expect(G.multiply(bigInt(9)).add(G.multiply(bigInt(5))).eq( G.multiply(bigInt(12)).add(G.multiply(bigInt(2))) )  ).toBeTruthy();
+
+    
+  expect(G.multiply(bn.n).eq(E.infinity)).toBeTruthy();
+  })
+
+  test('Curve 2 point test', () => {
+    let bn = new Parameters(256)
+    let E = new Curve(bn)
+    let Et = new Curve2(E)
+
+    const _2 = bigInt('2')
+    const Gt = Et.Gt;
+
+    expect(Gt.double().add(Gt).add(Gt).eq(Gt.twice(2))).toBeTruthy();
+    expect(Gt.twice(1).eq(Gt)).toBeFalsy();
+    expect(Gt.neg().neg().eq(Gt)).toBeTruthy();
+    expect(Gt.multiply(bigInt(9)).add(Gt.multiply(bigInt(5))).eq(Gt.multiply(bigInt(12)).add(Gt.multiply(bigInt(2))) )  ).toBeTruthy();
+    expect(Gt.multiply(bn.n).eq(Et.infinity)).toBeTruthy();
+    expect(Gt.multiply(_2.multiply(bn.p).subtract(bn.n)).eq(Et.infinity)).toBeFalsy()
+    expect(Et.contains(Gt.multiply(bigInt(2)))).toBeTruthy();
+  })
+
+});
+
+describe('Pairings', () => {
+
+  test('pair test', () => {
+    
+    /*let bn = new Parameters(256)
+    let E = new Curve(bn)
+    let Et = new Curve2(E)
+    const pair = new Pairing(Et)
+    const G = E.G;
+    const Gt = Et.Gt;
+    const _1 = bigInt('1')
+    const p1 = pair.ate(G, Gt);
+    const pn1 = pair.ate(G.neg(), Gt);
+
+    expect(p1.multiply(pn1).eq(new Field12(bn, _1))).toBeTruthy();
+
+    console.log(p1)
+    console.log(pn1)*/
 
   })
 
