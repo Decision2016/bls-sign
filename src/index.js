@@ -3,6 +3,7 @@ import CryptoRandom from './pairing/Rnd'
 import {Point2} from './pairing/Points'
 import Parameters from './pairing/Parameters'
 import {Curve, Curve2} from './pairing/Curves'
+import {Field12} from './pairing/Fields'
 import Pairing from './pairing/Pairing'
 import bigInt from 'big-integer'
 
@@ -195,9 +196,9 @@ class BLSSigner {
   }
 
   verify(Q, H, sQ, sH) {
-    const a = this.pair.ate(sQ.sQ, H)
-    const b = this.pair.ate(Q, sH.sH)
-    return (a.eq(b))
+    const a = this.pair.ate(sQ.sQ.toF12(), H.toF12())
+    const b = this.pair.ate(Q.toF12(), sH.sH.toF12())
+    return (a.multiply(b).eq(new Field12(this.bn, bigInt('1'))));
   }
 }
 

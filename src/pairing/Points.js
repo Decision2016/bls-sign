@@ -1,7 +1,7 @@
 'use strict';
 
 import { Curve, Curve2 } from './Curves'
-import { Field2 } from './Fields'
+import { Field2, Field12 } from './Fields'
 import bigInt from 'big-integer'
 import ExNumber from './ExNumber'
 
@@ -105,8 +105,8 @@ class Point {
     if (this.zero()) return Q;
     if (Q.zero()) return this;
     const _2 = bigInt('2');
-    let X1 = this.x, Y1 = this.y;
-    let X2 = Q.x, Y2 = Q.y;
+    const X1 = this.x, Y1 = this.y;
+    const X2 = Q.x, Y2 = Q.y;
     let m;
     if (X1.eq(X2) && (Y1.eq(Y2))) {
       return this.double(Q);
@@ -114,7 +114,6 @@ class Point {
       return this.E.infinity;
     } else {
       m = Y2.subtract(Y1).divide(X2.subtract(X1));
-      
     }
     let nx = m.exp(_2).subtract(X1).subtract(X2);
     let ny = m.neg().multiply(nx).add(m.multiply(X1)).subtract(Y1);
@@ -132,7 +131,7 @@ class Point {
     const _2 = new Field2(this.E.bn.p, bigInt(2));
     const _3 = new Field2(this.E.bn.p, bigInt(3));
 
-    let m = _3.multiply(X.exp(bigInt(2))).divide(_2.multiply(Y));
+    let m = _3.multiply(X).multiply(X).divide(_2.multiply(Y));
     
     let newx = m.exp(bigInt(2)).subtract(_2.multiply(X));
     let newy = m.neg().multiply(newx).add(m.multiply(X)).subtract(Y);
@@ -167,21 +166,48 @@ class Point {
       return P;
     }
   }
+
+  toF12() {
+    if (this.eq(this.E.infinity)) {
+      return this.E.infinity;
+    }
+
+    let x = this.x;
+    let y = this.y;
+
+    let nx = new Field12(this.E.bn, [
+      new Field2(this.E.bn.p, x.re, bigInt.zero, false),
+      new Field2(this.E.bn.p, bigInt.zero, bigInt.zero, false),
+      new Field2(this.E.bn.p, bigInt.zero, bigInt.zero, false),
+      new Field2(this.E.bn.p, bigInt.zero, bigInt.zero, false),
+      new Field2(this.E.bn.p, bigInt.zero, bigInt.zero, false),
+      new Field2(this.E.bn.p, bigInt.zero, bigInt.zero, false),
+    ]);
+
+    let ny = new Field12(this.E.bn, [
+      new Field2(this.E.bn.p, y.re, bigInt.zero, false),
+      new Field2(this.E.bn.p, bigInt.zero, bigInt.zero, false),
+      new Field2(this.E.bn.p, bigInt.zero, bigInt.zero, false),
+      new Field2(this.E.bn.p, bigInt.zero, bigInt.zero, false),
+      new Field2(this.E.bn.p, bigInt.zero, bigInt.zero, false),
+      new Field2(this.E.bn.p, bigInt.zero, bigInt.zero, false),
+    ]);
+
+    return new Point12(this.E, nx, ny);
+  }
 }
 
 
 class Point2 extends Point {
-  constructor (E, x, y, z) {
+  constructor (E, x, y) {
     super(E, x, y);
 
     if (arguments.length === 1) {
-
         if (E instanceof Curve2) {
             this.E = E;
-            
             this.x = E.Fp2_1;
             this.y = E.Fp2_1;
-            this.z = E.Fp2_0;
+            this.inf = true;
         }
 
         if (E instanceof Point2) {
@@ -189,7 +215,7 @@ class Point2 extends Point {
             this.E = Q.E;
             this.x = Q.x;
             this.y = Q.y;
-            this.z = Q.z;
+            this.inf = Q.inf;
         }
     }
     if(arguments.length === 3) {
@@ -198,7 +224,7 @@ class Point2 extends Point {
             this.E = E;
             this.x = x;
             this.y = y;
-            this.z = E.Fp2_1;
+            this.inf = false;
 
             if (!E.contains(this)) {
                 throw new Error("pointNotOnCurve");
@@ -206,17 +232,191 @@ class Point2 extends Point {
         }
 
     }
-    if (arguments.length === 4) {
-        this.E = E;
-        this.x = x;
-        this.y = y;
-        this.z = z;
+  }
+
+  add(Q) {
+    if (this.zero()) return Q;
+    if (Q.zero()) return this;
+    const _2 = bigInt('2');
+    let X1 = this.x, Y1 = this.y;
+    let X2 = Q.x, Y2 = Q.y;
+    let m;
+    if (X1.eq(X2) && (Y1.eq(Y2))) {
+      return this.double(Q);
+    } else if (X1.eq(X2)) {
+      return this.E.infinity;
+    } else {
+      m = Y2.subtract(Y1).divide(X2.subtract(X1));
+      
     }
+    let nx = m.exp(_2).subtract(X1).subtract(X2);
+    let ny = m.neg().multiply(nx).add(m.multiply(X1)).subtract(Y1);
+    return new Point2(this.E, nx, ny);
+  }
+
+  twice(n) {
+    if (this.zero()) return this;
+    let P = new Point2(this.E, this.x, this.y);
+    
+    for (let i = 0; i< n; i++) {
+      P = P.double();
+    }
+
+    return  P;
+  }
+
+  double() {
+    let X = this.x;
+    let Y = this.y;
+   
+    const _2 = new Field2(this.E.bn.p, bigInt(2));
+    const _3 = new Field2(this.E.bn.p, bigInt(3));
+
+    let m = _3.multiply(X).multiply(X).divide(_2.multiply(Y));
+    
+    let newx = m.exp(bigInt(2)).subtract(_2.multiply(X));
+    let newy = m.neg().multiply(newx).add(m.multiply(X)).subtract(Y);
+
+    return new Point2(this.E, newx, newy)
+  }
+
+  toF12() {
+    if (this.eq(this.E.infinity)) {
+      return this.E.infinity;
+    }
+
+    let _x = this.x;
+    let _y = this.y;
+
+    let xre = new Field2(this.E.bn.p, _x.re);
+    let yre = new Field2(this.E.bn.p, _y.re);
+    let xim = new Field2(this.E.bn.p, _x.im);
+    let yim = new Field2(this.E.bn.p, _y.im);
+
+    let xcoeffs = xre.subtract(xim.multiply(bigInt(9)));
+    let ycoeffs = yre.subtract(yim.multiply(bigInt(9)));
+
+    let w = new Field12(this.E.bn, [
+      new Field2(this.E.bn.p, bigInt.zero, bigInt.one, false),
+      new Field2(this.E.bn.p, bigInt.zero, bigInt.zero, false),
+      new Field2(this.E.bn.p, bigInt.zero, bigInt.zero, false),
+      new Field2(this.E.bn.p, bigInt.zero, bigInt.zero, false),
+      new Field2(this.E.bn.p, bigInt.zero, bigInt.zero, false),
+      new Field2(this.E.bn.p, bigInt.zero, bigInt.zero, false),
+    ]);
+
+    let nx = new Field12(this.E.bn, [
+      new Field2(this.E.bn.p, xcoeffs.re, bigInt.zero, false),
+      new Field2(this.E.bn.p, bigInt.zero, bigInt.zero, false),
+      new Field2(this.E.bn.p, bigInt.zero, bigInt.zero, false),
+      new Field2(this.E.bn.p, _x.im, bigInt.zero, false),
+      new Field2(this.E.bn.p, bigInt.zero, bigInt.zero, false),
+      new Field2(this.E.bn.p, bigInt.zero, bigInt.zero, false),
+    ]);
+
+    let ny = new Field12(this.E.bn, [
+      new Field2(this.E.bn.p, ycoeffs.re, bigInt.zero, false),
+      new Field2(this.E.bn.p, bigInt.zero, bigInt.zero, false),
+      new Field2(this.E.bn.p, bigInt.zero, bigInt.zero, false),
+      new Field2(this.E.bn.p, _y.im, bigInt.zero, false),
+      new Field2(this.E.bn.p, bigInt.zero, bigInt.zero, false),
+      new Field2(this.E.bn.p, bigInt.zero, bigInt.zero, false),
+    ]);
+
+    nx = nx.multiply(w).multiply(w);
+    ny = ny.multiply(w).multiply(w).multiply(w);
+
+    return new Point12(this.E, nx, ny);
   }
 
   toString() {
-    return ('('+this.x.toString()+','+this.y.toString()+','+this.z.toString()+')');
+    return ('('+this.x.toString()+','+this.y.toString()+')');
   }
 }
 
-export {Point, Point2}
+
+class Point12 extends Point2 {
+  constructor (E, x, y) {
+    super(E, x, y);
+
+    if (arguments.length === 1) {
+        if (E instanceof Curve2) {
+            this.E = E;
+            this.x = E.Fp12_1;
+            this.y = E.Fp12_1;
+            this.inf = true;
+        }
+
+        if (E instanceof Point2) {
+            let Q = E;
+            this.E = Q.E;
+            this.x = Q.x;
+            this.y = Q.y;
+            this.inf = Q.inf;
+        }
+    }
+    if(arguments.length === 3) {
+
+        if ((x instanceof Field12) && (y instanceof Field12)) {
+            this.E = E;
+            this.x = x;
+            this.y = y;
+            this.inf = false;
+
+        }
+
+    }
+  }
+
+  add(Q) {
+    if (this.zero()) return Q;
+    if (Q.zero()) return this;
+    const _2 = bigInt('2');
+    let X1 = this.x, Y1 = this.y;
+    let X2 = Q.x, Y2 = Q.y;
+    let m;
+    if (X1.eq(X2) && (Y1.eq(Y2))) {
+      return this.double(Q);
+    } else if (X1.eq(X2)) {
+      return this.E.infinity;
+    } else {
+      m = Y2.subtract(Y1).divide(X2.subtract(X1));
+      
+    }
+    let nx = m.multiply(m).subtract(X1).subtract(X2);
+    let ny = m.neg().multiply(nx).add(m.multiply(X1)).subtract(Y1);
+    return new Point12(this.E, nx, ny);
+  }
+
+  twice(n) {
+    if (this.zero()) return this;
+    let P = new Point12(this.E, this.x,this.y);
+    
+    for (let i = 0; i< n; i++) {
+      P = P.double();
+    }
+
+    return  P;
+  }
+
+  double() {
+    let X = this.x;
+    let Y = this.y;
+   
+    let _3 = new Field12(this.E.bn, bigInt(3));
+    let _2 = new Field12(this.E.bn, bigInt(2));
+
+    let m = _3.multiply(X).multiply(X).divide(_2.multiply(Y));
+
+    let newx = m.multiply(m).subtract(_2.multiply(X));
+    let newy = m.neg().multiply(newx).add(m.multiply(X)).subtract(Y);
+
+    return new Point12(this.E, newx, newy)
+  }
+
+  toString() {
+    return ('('+this.x.toString()+', '+this.y.toString()+')');
+  }
+}
+
+export { Point, Point2, Point12 }

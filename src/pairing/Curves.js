@@ -2,7 +2,7 @@
 
 import Parameters from './Parameters'
 import { Point, Point2 } from './Points'
-import { Field2 } from './Fields'
+import { Field2, Field12 } from './Fields'
 import CryptoRandom from './Rnd'
 import bigInt from 'big-integer'
 import ExNumber from './ExNumber'
@@ -22,14 +22,9 @@ class Curve {
 
   pointFactory(rand) {
     if (rand instanceof CryptoRandom) {
-      let x, y;
-      do {
-          x = ExNumber.mod(  ExNumber.construct(2*this.bn.p.bitLength(), rand), this.bn.p);
-          y = this.bn.sqrt(x.multiply(x).multiply(x).add(this.b));
-      } while (y === null);
-      return new Point(this, x, y);
+      return this.G.multiply(ExNumber.construct(2*this.bn.p.bitLength() ) );
     } else {
-        throw new Error("Parameter is not a cryptographically strong PRNG");
+      throw new Error("Parameter is not a cryptographically strong PRNG");
     }
   }
 
@@ -40,9 +35,20 @@ class Curve {
     
     let x  = P.x;
     let y  = P.y;
-    let z  = P.z;
 
-    return y.square().eq(x.cube().add(this.bt));
+    if (x instanceof Field12 && y instanceof Field12) {
+      const b = new Field12(this.bn, [
+        new Field2(this.bn.p, bigInt('3'), bigInt.zero, false),
+        new Field2(this.bn.p, bigInt.zero, bigInt.zero, false),
+        new Field2(this.bn.p, bigInt.zero, bigInt.zero, false),
+        new Field2(this.bn.p, bigInt.zero, bigInt.zero, false),
+        new Field2(this.bn.p, bigInt.zero, bigInt.zero, false),
+        new Field2(this.bn.p, bigInt.zero, bigInt.zero, false),
+      ]);
+      return y.square().eq(x.multiply(x).multiply(x).add(b));
+    }
+
+    return y.square().eq(x.multiply(x).multiply(x).add(this.b));
   }
 
   kG(k) {
@@ -61,14 +67,13 @@ class Curve2 extends Curve {
       this.Fp2_i = E.bn.Fp2_i;
       this.infinity = new Point2(this);
 
-      this.bt = new Field2(E.bn.p, bigInt('3')).mulV();
-      //b2 = FQ2([3, 0]) / FQ2([9, 1])
+      this.b = new Field2(E.bn.p, bigInt('3')).mulV();
+
       if (E.bn.m == 256)
-        this.bt = new Field2(E.bn.p, bigInt('3')).divide(new Field2(E.bn.p, bigInt('9'), bigInt('1'), false));
-      
+        this.b = new Field2(E.bn.p, bigInt('3')).divide(new Field2(E.bn.p, bigInt('9'), bigInt('1'), false));
 
       this.xt = new Field2(E.bn.p, bigInt('1'), bigInt.zero, false);
-      this.yt = this.xt.cube().add(this.bt).sqrt();
+      this.yt = this.xt.cube().add(this.b).sqrt();
 
       if (E.bn.m == 256) {
         this.xt = new Field2(E.bn.p, 
@@ -81,14 +86,6 @@ class Curve2 extends Curve {
 
       this.Gt = new Point2(this, this.xt, this.yt);
     }
-  }
-
-  pointFactory(rand) {
-    let k;
-    do {
-        k = ExNumber.mod( ExNumber.construct(this.E.bn.n.bitLength(), rand), this.E.bn.n);
-    } while (ExNumber.signum(k) === 0);
-    return this.kG(k);
   }
 }
 

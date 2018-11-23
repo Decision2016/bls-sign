@@ -4,7 +4,6 @@ import CryptoRandom from './Rnd'
 import bigInt from 'big-integer'
 import ExNumber from './ExNumber'
 
-
 const _1 = bigInt('1')
 const _2 = bigInt('2')
 const _0 = bigInt('0')
@@ -480,9 +479,7 @@ class Field12 {
       }
       return new Field12(this.bn, w);
     } else if (k instanceof Field12) {
-        if (k.eq(this)) {
-          return this.square();
-        }
+
         if (!this.bn.p.equals(k.bn.p)) {
             throw new Error("Operands are in different finite fields");
         }
@@ -515,45 +512,6 @@ class Field12 {
 
         return this.join(b);
       } 
-  }
-
-  square() {
-    let d00 = this.v[0].square();
-    let d11 = this.v[1].square();
-    let d22 = this.v[2].square();
-    let d33 = this.v[3].square();
-    let d44 = this.v[4].square();
-    let d55 = this.v[5].square();
-    let s01 = this.v[0].add(this.v[1]);
-    let t01 = d00.add(d11);
-    let d01 = s01.square().subtract(t01);
-    let d02 = this.v[0].add(this.v[2]).square().subtract(d00.add(d22));
-    let d04 = this.v[0].add(this.v[4]).square().subtract(d00.add(d44));
-    let d13 = this.v[1].add(this.v[3]).square().subtract(d11.add(d33));
-    let d15 = this.v[1].add(this.v[5]).square().subtract(d11.add(d55));
-    let s23 = this.v[2].add(this.v[3]);
-    let t23 = d22.add(d33);
-    let d23 = s23.square().subtract(t23);
-    let d24 = this.v[2].add(this.v[4]).square().subtract(d22.add(d44));
-    let d35 = this.v[3].add(this.v[5]).square().subtract(d33.add(d55));
-    let s45 = this.v[4].add(this.v[5]);
-    let t45 = d44.add(d55);
-    let d45 = s45.square().subtract(t45);
-    t01 = t01.add(d01)
-    t23 = t23.add(d23);
-    t45 = t45.add(d45);
-
-    let d03 = s01.add(s23).square().subtract(t01.add(t23).add(d02).add(d13));
-    let d05 = s01.add(s45).square().subtract(t01.add(t45).add(d04).add(d15));
-    let d25 = s23.add(s45).square().subtract(t23.add(t45).add(d24).add(d35));
-    let w = new Array(6);
-    w[0] = d15.add(d24).add(d33).divV().add(d00);
-    w[1] = d25.divV().add(d01);
-    w[2] = d35.add(d44).divV().add(d02).add(d11);
-    w[3] = d45.divV().add(d03);
-    w[4] = d55.divV().add(d04).add(d13).add(d22);
-    w[5] = d05.add(d23);
-    return new Field12(this.bn, w);
   }
 
   mulV () {
@@ -645,7 +603,7 @@ class Field12 {
   exp(k) {
     let w = this;
     for (let i = k.bitLength()-2; i >= 0; i--) {
-        w = w.square();
+        w = w.multiply(w);
         if (ExNumber.testBit(k, i)) {
             w = w.multiply(this);
         }
@@ -658,12 +616,12 @@ class Field12 {
   }
 
   toString() {
-    return '['+this.v[0].re.toString()+','+this.v[0].im.toString()+', '+
-    this.v[1].re.toString()+','+this.v[1].im.toString()+', '+
-    this.v[2].re.toString()+','+this.v[2].im.toString()+', ' +
-    this.v[3].re.toString()+','+this.v[3].im.toString()+', '+
-    this.v[4].re.toString()+','+this.v[4].im.toString()+', '+
-    this.v[5].re.toString()+','+this.v[5].im.toString()+']';
+    return '['+this.v[0].re.toString()+', '+this.v[0].im.toString()+', '+
+    this.v[1].re.toString()+', '+this.v[1].im.toString()+', '+
+    this.v[2].re.toString()+', '+this.v[2].im.toString()+', ' +
+    this.v[3].re.toString()+', '+this.v[3].im.toString()+', '+
+    this.v[4].re.toString()+', '+this.v[4].im.toString()+', '+
+    this.v[5].re.toString()+', '+this.v[5].im.toString()+']';
   }
 }
 
