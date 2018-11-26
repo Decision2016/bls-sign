@@ -1,10 +1,13 @@
 const {BLSSigner, BLSSecretKey, BLSSignature, BLSPublicKey} =  require( './src/index' )
+import bigInt from 'big-integer'
 
 const signer = new BLSSigner(256)
 
-const Q = signer.getRandomPointOnE()
-const H = signer.getRandomPointOnEt()
-
+let Q = signer.getRandomPointOnE()
+let H = signer.getRandomPointOnEt()
+//onsole.log('G', signer.getCurve().G.toString())
+// Q = signer.getCurve().G.multiply(bigInt(4));
+// H = signer.getCurve2().Gt.multiply(bigInt(5));
 // next tests with desctiption as follow
 console.log('-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-')
 console.log(' BLS Signature over EC pairings')
@@ -21,18 +24,18 @@ console.log('-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-')
 console.time('sign')
 const s = new BLSSecretKey()
 
-console.log('s', s)
+console.log('s', s.toString())
 const sQ = new BLSPublicKey(s, Q)
-console.log('sQ', sQ)
+console.log('sQ', sQ.toString())
 const sH = s.sign(H)
-console.log('sH', sH)
+console.log('sH', sH.toString())
 const sH2 = new BLSSecretKey().sign(H)
-console.log('sH2', sH2)
-console.log('\x1b[37m', ' Q  = (' + (Q.x) + ', ' + (Q.y) + ')')
-console.log('\x1b[37m', ' sQ = (' + (sQ.sQ.x) + ', ' + (sQ.sQ.y) + ')')
-console.log('\x1b[37m', ' H  = (' + (H.x.re) + ', ' + (H.y.re) + ')')
-console.log('\x1b[37m', ' sH = (' + (sH.sH.x.re) + ', ' + (sH.sH.y.re) + ')')
-console.log('\x1b[37m', ' sH2 = (' + (sH2.sH.x.re) + ', ' + (sH2.sH.y.re) + ')')
+console.log('sH2', sH2.toString())
+console.log('\x1b[37m', ' Q  = ' + Q.toString() )
+console.log('\x1b[37m', ' sQ = ' + sQ.sQ.toString())
+console.log('\x1b[37m', ' H  = ' + H.toString() )
+console.log('\x1b[37m', ' sH = ' + sH.sH.toString())
+console.log('\x1b[37m', ' sH2 = ' + sH2.sH.toString() )
 console.log('\x1b[33m', ' Verify(Q,sQ,H,sH) = ' + signer.verify(Q, H, sQ, sH) + '')
 console.log('\x1b[31m', ' Verify(Q,sQ,H,s2H) = ' + signer.verify(Q, H, sQ, sH2) + '')
 
@@ -51,7 +54,6 @@ let prv0 = new BLSSecretKey()
 let sig0 = new BLSSignature()
 
 sig0 = prv0.sign(H)
-
 let pub0 =  new BLSPublicKey(prv0, Q)
 
 let vec = prv0.share(n, k)

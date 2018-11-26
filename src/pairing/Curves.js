@@ -87,6 +87,14 @@ class Curve2 extends Curve {
       this.Gt = new Point2(this, this.xt, this.yt);
     }
   }
+
+  pointFactory(rand) {
+    if (rand instanceof CryptoRandom) {
+      return this.Gt.multiply(ExNumber.construct(2*this.bn.p.bitLength() ) );
+    } else {
+      throw new Error("Parameter is not a cryptographically strong PRNG");
+    }
+  }
 }
 
 export { Curve, Curve2 }
