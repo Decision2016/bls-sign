@@ -2,14 +2,13 @@
 
 import Parameters from './Parameters'
 import { Point, Point2 } from './Points'
-import { Field2, Field12 } from './Fields'
+import { Field2, Field12, Fp2 } from './Fields'
 import CryptoRandom from './Rnd'
 import bigInt from 'big-integer'
 import ExNumber from './ExNumber'
 
 class Curve {
   constructor(bn) {
-    if (bn instanceof Parameters) {
       const _1 = new Field2(bn.p, bigInt(1));
       const _2 = new Field2(bn.p, bigInt(2));
       const _3 = new Field2(bn.p, bigInt(3));
@@ -17,7 +16,7 @@ class Curve {
       this.b =  _3; 
       this.infinity = new Point(this);
       this.G = new Point(this, _1, _2);
-    }
+    
   }
 
   pointFactory(rand) {

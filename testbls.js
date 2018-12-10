@@ -3,11 +3,16 @@ import bigInt from 'big-integer'
 
 const signer = new BLSSigner(256)
 
-let Q = signer.getRandomPointOnE()
-let H = signer.getRandomPointOnEt()
+//let Q = signer.getRandomPointOnE()
+//let H = signer.getRandomPointOnEt()
 //onsole.log('G', signer.getCurve().G.toString())
-// Q = signer.getCurve().G.multiply(bigInt(4));
-// H = signer.getCurve2().Gt.multiply(bigInt(5));
+
+
+const G = signer.getG();
+const G2 = signer.getG2();
+
+let Q = G.multiply(bigInt(4));
+let H = G2.multiply(bigInt(5));
 // next tests with desctiption as follow
 console.log('-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-')
 console.log(' BLS Signature over EC pairings')
@@ -22,14 +27,14 @@ console.log('  verify(H, sQ, sH) -> e(sQ, H(m)) = e(Q, s H(m)<br><br>')
 console.log('-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-+*+-')
 
 console.time('sign')
-const s = new BLSSecretKey()
+const s = new BLSSecretKey(2)
 
 console.log('s', s.toString())
 const sQ = new BLSPublicKey(s, Q)
 console.log('sQ', sQ.toString())
 const sH = s.sign(H)
 console.log('sH', sH.toString())
-const sH2 = new BLSSecretKey().sign(H)
+const sH2 = new BLSSecretKey(3).sign(H)
 console.log('sH2', sH2.toString())
 console.log('\x1b[37m', ' Q  = ' + Q.toString() )
 console.log('\x1b[37m', ' sQ = ' + sQ.sQ.toString())
@@ -108,9 +113,9 @@ let signArray = new Array(3)
 signArray[0] = signVec[0]
 signArray[1] = signVec[1]
 signArray[2] = signVec[2]
-
+/*
 let sig = new BLSSignature()
-sig.recover(signArray, signer.getCurve2())
+sig.recover(signArray, signer.getG2())
 
 if (!sig.sH.eq(sig0.sH)) {
   throw Error('Error: can\'t recover signature!')
@@ -121,8 +126,8 @@ signArray = new Array(2)
 signArray[0] = signVec[0]
 signArray[1] = signVec[1]
 
-sig.recover(signArray, signer.getCurve2())
+sig.recover(signArray, signer.getG2())
 
 if (sig.sH.eq(sig0.sH)) {
   throw Error('Error: unlikely we can recover 2-n signature!');
-}
+}*/

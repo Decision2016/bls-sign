@@ -1,11 +1,13 @@
 
 import CryptoRandom from './pairing/Rnd'
 import {Point2} from './pairing/Points'
-import Parameters from './pairing/Parameters'
 import {Curve, Curve2} from './pairing/Curves'
 import Pairing from './pairing/Pairing'
 import bigInt from 'big-integer'
-
+import {Field, Fp2, Fp6, Fp12, Parameters} from './pairing/Fields'
+import {BN128Fp, BN128Fp2} from './pairing/BN128'
+import {PairingCheck} from './pairing/PairingCheck'
+import ExNumber from './pairing/ExNumber'
 /** Secret Key */
 class BLSSecretKey {
   constructor(s) {
@@ -164,34 +166,39 @@ class BLSSigner {
 
   constructor(bitLength) {
     this.rng = new CryptoRandom()
-    this.bn = new Parameters(bitLength)
-    this.E = new Curve(this.bn)
-    this.Et = new Curve2(this.E)
-    this.pair = new Pairing(this.Et)
+
+    this.G = BN128Fp.create( bigInt('1'), bigInt('2') );
+
+    this.G2 = BN128Fp2.create( 
+      bigInt('10857046999023057135944570762232829481370756359578518086990519993285655852781'), 
+      bigInt('11559732032986387107991004021392285783925812861821192530917403151452391805634'), 
+      bigInt('8495653923123431417604973247489272438418190587263600148770280649306958101930'), 
+      bigInt('4082367875863433681332203403145435568316851327593401208105741076214120093531') ) ;
+
   }
 
   getRandomPointOnE() {
-    return this.E.pointFactory(this.rng)
+      if (this.rng instanceof CryptoRandom) {
+        return this.getG().multiply(ExNumber.construct(2*Parameters.p.bitLength() ) );
+      } else {
+        throw new Error("Parameter is not a cryptographically strong PRNG");
+      }
   }
 
   getRandomPointOnEt() {
-    return this.Et.pointFactory(this.rng)
+    if (this.rng instanceof CryptoRandom) {
+      return this.getG2().multiply(ExNumber.construct(2*Parameters.p.bitLength() ) );
+    } else {
+      throw new Error("Parameter is not a cryptographically strong PRNG");
+    }
   }
 
-  getCurve() {
-    return this.E
+  getG() {
+    return this.G
   }
 
-  getE() {
-    return this.E
-  }
-
-  getEt() {
-    return this.Et
-  }
-
-  getCurve2() {
-    return this.Et
+  getG2() {
+    return this.G2
   }
 
   getPairing() {
@@ -207,11 +214,17 @@ class BLSSigner {
   }
 
   verify(Q, H, sQ, sH) {
-    const a = this.pair.ate(sQ.sQ.toF12(), H.toF12())
-    console.log('a', a.toString());
-    const b = this.pair.ate(Q.toF12(), sH.sH.toF12())
-    console.log('b', b.toString());
-    return a.eq(b);
+
+    let pc = PairingCheck.create();
+    pc.addPair(sQ.sQ, H);
+    pc.run();
+    let pair = pc.result();
+    pc = PairingCheck.create();
+    pc.addPair(Q, sH.sH);
+    pc.run();
+    let pair2 = pc.result();
+   
+    return pair.eq(pair2);
   }
 }
 
