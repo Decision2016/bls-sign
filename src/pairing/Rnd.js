@@ -1,5 +1,5 @@
 'use strict';
-import crypto from 'crypto';
+const crypto = require('crypto');
 
 class CryptoRandom {
   nextBytes(ba) {
@@ -8,4 +8,4 @@ class CryptoRandom {
   }
 }
 
-export default CryptoRandom;
+module.exports = CryptoRandom;

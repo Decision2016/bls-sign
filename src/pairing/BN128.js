@@ -1,10 +1,8 @@
 
 
-import {Field, Fp2} from './Fields'
-
-import CryptoRandom from './Rnd'
-import bigInt from 'big-integer'
-import ExNumber from './ExNumber'
+const {Field, Fp2} = require('./Fields')
+const bigInt  = require( 'big-integer')
+const ExNumber = require( './ExNumber')
 
 class BN128Fp {
 
@@ -15,9 +13,6 @@ class BN128Fp {
         this.z = z;
       }
     }
-
-
-
 
     static get n() {
       return bigInt("21888242871839275222246405745257275088548364400416034343698204186575808495617");
@@ -474,5 +469,4 @@ class BN128Fp2 {
 
 }
 
-
-export {BN128Fp, BN128Fp2}
+module.exports = {BN128Fp, BN128Fp2}

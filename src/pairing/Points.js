@@ -1,9 +1,9 @@
 'use strict';
 
-import { Curve, Curve2 } from './Curves'
-import { Field2, Field12 } from './Fields'
-import bigInt from 'big-integer'
-import ExNumber from './ExNumber'
+const { Curve, Curve2 } = require('./Curves');
+const { Field2, Field12 } = require( './Fields');
+const bigInt = require( 'big-integer' );
+const ExNumber = require( './ExNumber' );
 
 class Point {
   constructor(E, x, y) {
@@ -419,4 +419,4 @@ class Point12 extends Point2 {
   }
 }
 
-export { Point, Point2, Point12 }
+module.exports = { Point, Point2, Point12 }

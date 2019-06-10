@@ -1,8 +1,8 @@
 'use strict';
 
-import CryptoRandom from './Rnd'
-import bigInt from 'big-integer'
-import ExNumber from './ExNumber'
+const CryptoRandom = require('./Rnd')
+const bigInt = require( 'big-integer' )
+const ExNumber = require( './ExNumber' )
 
 const _1 = bigInt('1')
 const _2 = bigInt('2')
@@ -1321,4 +1321,4 @@ class Field12 {
   }
 }
 
-export { Field, Fp2, Fp6, Fp12, Field2, Field12, Parameters }
+module.exports = { Field, Fp2, Fp6, Fp12, Field2, Field12, Parameters }

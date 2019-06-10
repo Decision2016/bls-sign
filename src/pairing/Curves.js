@@ -1,11 +1,11 @@
 'use strict';
 
-import Parameters from './Parameters'
-import { Point, Point2 } from './Points'
-import { Field2, Field12, Fp2 } from './Fields'
-import CryptoRandom from './Rnd'
-import bigInt from 'big-integer'
-import ExNumber from './ExNumber'
+
+const { Point, Point2 } = require('./Points')
+const { Field2, Field12 }  = require( './Fields' )
+const CryptoRandom  = require( './Rnd' )
+const bigInt  = require( 'big-integer' )
+const ExNumber  = require( './ExNumber' )
 
 class Curve {
   constructor(bn) {
@@ -96,4 +96,4 @@ class Curve2 extends Curve {
   }
 }
 
-export { Curve, Curve2 }
+module.exports = { Curve, Curve2 }

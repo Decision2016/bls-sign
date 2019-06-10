@@ -1,4 +1,4 @@
-import bigInt from 'big-integer'
+const bigInt = require ( 'big-integer' );
 
 class ExNumber {
 
@@ -48,4 +48,4 @@ class ExNumber {
   }
 }
 
-export default ExNumber;
+module.exports = ExNumber;

@@ -1,9 +1,9 @@
 
 
-import {Field, Fp2, Fp12, Field2} from './Fields'
-import bigInt from 'big-integer'
-import ExNumber from './ExNumber'
-import {BN128Fp, BN128Fp2} from './BN128'
+const {Field, Fp2, Fp12} = require('./Fields')
+const bigInt = require ('big-integer')
+const ExNumber = require ('./ExNumber')
+const {BN128Fp2} = require( './BN128')
 
 class EllCoeffs {
   constructor( ell0,  ellVW,  ellVV) {
@@ -220,4 +220,4 @@ class EllCoeffs {
     
 }
 
-export {PairingCheck}
+module.exports = {PairingCheck}
