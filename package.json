@@ -21,7 +21,6 @@
   ],
   "author": "Vladimir Kovalchuk <vladimir.k@clever-solution.com> (https://vladimirkovalchuk8.wixsite.com/profile)",
   "dependencies": {
-    "babel-preset-es2015-rollup": "^3.0.0",
     "big-integer": "^1.6.30"
   },
   "devDependencies": {
