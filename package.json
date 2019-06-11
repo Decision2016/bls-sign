@@ -1,6 +1,6 @@
 {
   "name": "bls-sign",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "description": "BLS threshold signatures creation and verification",
   "main": "index.js",
   "jsnext:main": "main.mjs",
