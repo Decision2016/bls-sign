@@ -6,7 +6,7 @@
   "jsnext:main": "main.mjs",
   "scripts": {
     "test": "jest",
-    "build": "rollup -c"
+    "build": "webpack --mode production"
   },
   "repository": {
     "type": "git",
@@ -32,7 +32,9 @@
     "rollup-plugin-json": "^3.1.0",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-globals": "^1.4.0",
-    "rollup-plugin-node-resolve": "^3.4.0"
+    "rollup-plugin-node-resolve": "^3.4.0",
+    "webpack": "^4.33.0",
+    "webpack-cli": "^3.3.3"
   },
   "license": "Apache-2.0",
   "bugs": {

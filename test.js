@@ -1,12 +1,10 @@
-const {BLSSigner, BLSSecretKey, BLSSignature, BLSPublicKey} =  require( './src/index' )
-const bigInt = require('big-integer')
+const {BLSSigner, BLSSecretKey, BLSSignature, BLSPublicKey, bigInt} =  require( './dist' );
 
 const signer = new BLSSigner(256)
 
 //let Q = signer.getRandomPointOnE()
 //let H = signer.getRandomPointOnEt()
 //onsole.log('G', signer.getCurve().G.toString())
-
 
 const G = signer.getG();
 const G2 = signer.getG2();

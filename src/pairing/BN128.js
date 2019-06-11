@@ -123,6 +123,7 @@ class BN128Fp {
     }
 
     multiply(s) {
+
         if (!bigInt.isInstance(s)) {
           throw new Error('error not bigint')
         }
@@ -359,7 +360,7 @@ class BN128Fp2 {
 
 
   multiply(s) {
-
+        
       if (!bigInt.isInstance(s)) {
         throw new Error('error not bigint')
       }

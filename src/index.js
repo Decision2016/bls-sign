@@ -226,4 +226,4 @@ class BLSSigner {
   }
 }
 
-module.exports = {BLSSigner, BLSSecretKey, BLSSignature, BLSPublicKey, BLSPolynomial}
+module.exports = {BLSSigner, BLSSecretKey, BLSSignature, BLSPublicKey, BLSPolynomial, bigInt}
