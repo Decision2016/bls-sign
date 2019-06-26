@@ -1,4 +1,11 @@
-const {BLSSigner, BLSSecretKey, BLSSignature, BLSPublicKey, bigInt} =  require( './dist' );
+
+var bigInt = require("big-integer");
+const {BLSSigner, BLSSecretKey, BLSSignature, BLSPublicKey} =  require( './dist' );
+
+const rer = 22n;
+
+//console.log( bigInt(24));
+
 
 const signer = new BLSSigner(256)
 

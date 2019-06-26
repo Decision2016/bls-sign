@@ -9,7 +9,7 @@ module.exports = {
     libraryTarget: 'commonjs2'
   },
   externals: {
-    bigInt: 'big-integer'
+    "big-integer": "big-integer"
   },
   module: {
     rules: []

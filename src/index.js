@@ -6,6 +6,7 @@ const {Parameters} = require( './pairing/Fields')
 const {BN128Fp, BN128Fp2} = require( './pairing/BN128')
 const {PairingCheck} = require( './pairing/PairingCheck')
 const ExNumber = require( './pairing/ExNumber')
+
 /** Secret Key */
 class BLSSecretKey {
   constructor(s) {
@@ -226,4 +227,4 @@ class BLSSigner {
   }
 }
 
-module.exports = {BLSSigner, BLSSecretKey, BLSSignature, BLSPublicKey, BLSPolynomial, bigInt}
+module.exports = {BLSSigner, BLSSecretKey, BLSSignature, BLSPublicKey, BLSPolynomial}
